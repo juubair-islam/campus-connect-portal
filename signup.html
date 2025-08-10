@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Connect - Signup</title>
+  <link rel="stylesheet" href="css/signup.css" />
+</head>
+<body>
+<header class="header">
+  <a href="index.html" class="logo-title">
+    <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
+    <div class="header-text">
+      <h1>Campus Connect</h1>
+      <p class="tagline">Bridge to Your IUB Community</p>
+    </div>
+  </a>
+
+  <a href="login.html" class="back-button">⬅ Back</a>
+</header>
+
+<main>
+  <form id="signupForm" novalidate>
+    <h2>Sign Up</h2>
+    <p class="connect-tag">🔗 Connect with your campus today!</p>
+
+    <!-- Role selection -->
+    <div class="form-group role-select" role="radiogroup" aria-label="Select Role">
+      <label class="role-option">
+        <input type="radio" name="role" value="student" checked required /> Student
+      </label>
+      <label class="role-option">
+        <input type="radio" name="role" value="administrative_staff" required /> Administrative Staff
+      </label>
+    </div>
+
+    <!-- Student Fields -->
+    <div id="studentFields">
+      <div class="form-group">
+        <label for="iub_id">IUB Student ID</label>
+        <input
+          type="text"
+          id="iub_id"
+          name="iub_id"
+          placeholder="Enter your IUB Student ID"
+          required
+          autocomplete="off"
+        />
+        <button type="button" id="loadStudentBtn">Load Data</button>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Student Name</label>
+        <input type="text" id="name" name="name" placeholder="Student Name" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="department">Department</label>
+        <input type="text" id="department" name="department" placeholder="Department" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="major">Major</label>
+        <input type="text" id="major" name="major" placeholder="Major" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="minor">Minor</label>
+        <input type="text" id="minor" name="minor" placeholder="Minor" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Contact Email</label>
+        <input type="email" id="email" name="email" placeholder="Contact Email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="contact_number">Contact Number</label>
+        <input type="tel" id="contact_number" name="contact_number" placeholder="Contact Number" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password" required />
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
+      </div>
+      <span id="passwordMatchMsg" class="validation-msg"></span>
+    </div>
+
+    <!-- Administrative Staff Fields -->
+    <div id="facultyFields" style="display:none;">
+      <div class="form-group">
+        <label for="full_name">Full Name</label>
+        <input type="text" id="full_name" name="full_name" placeholder="Full Name" />
+      </div>
+
+      <div class="form-group">
+        <label for="employee_id">Employee ID</label>
+        <input type="text" id="employee_id" name="employee_id" placeholder="Employee ID" />
+      </div>
+
+      <div class="form-group">
+        <label for="department_faculty">Department</label>
+        <select id="department_faculty" name="department">
+          <option value="" disabled selected>Select Department</option>
+          <option value="DirectorAdministration">Office of the Director of Administration</option>
+          <option value="Registrar">Registrar Office</option>
+          <option value="ControllerExaminations">Office of the Controller of Examinations</option>
+          <option value="AdmissionsFinancialAid">Admission & Financial Aid Office</option>
+          <option value="FinanceAccounts">Finance & Accounts Office</option>
+          <option value="PublicRelations">Public Relations / Communications Office</option>
+          <option value="CITS">Centre for IT Services (CITS)</option>
+          <option value="IQAC">Institutional Quality Assurance Cell (IQAC)</option>
+          <option value="CareerStudentAffairs">Career Counselling & Student Affairs Directorate</option>
+          <option value="CIAC">Centre for International Affairs & Cooperation (CIAC)</option>
+          <option value="MedicalCenter">University Medical Center</option>
+          <option value="Library">University Library (Shaheed Irfan Library)</option>
+          <option value="ProgramOffices">Academic Program/School Offices</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="iub_email">IUB Email</label>
+        <input type="email" id="iub_email" name="iub_email" placeholder="IUB Email (e.g., user@iub.edu.bd)" />
+      </div>
+
+      <div class="form-group">
+        <label for="contact_number_faculty">Contact Number</label>
+        <input type="tel" id="contact_number_faculty" name="contact_number" placeholder="Contact Number" />
+      </div>
+
+      <div class="form-group">
+        <label for="password_faculty">Password</label>
+        <input type="password" id="password_faculty" name="password" placeholder="Password" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password_faculty">Confirm Password</label>
+        <input type="password" id="confirm_password_faculty" name="confirm_password" placeholder="Confirm Password" />
+      </div>
+      <span id="passwordMatchMsgFaculty" class="validation-msg"></span>
+    </div>
+
+    <div id="successMessage" class="success-msg"></div>
+    <div id="formStatus" class="validation-msg"></div>
+    <button type="submit">Sign Up</button>
+  </form>
+</main>
+
+<footer class="footer">
+  <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
+</footer>
+
+<script src="js/signup.js"></script>
+</body>
+</html>

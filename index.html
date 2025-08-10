@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Connect - Login</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="logo-title">
+      <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
+      <div class="header-text">
+        <h1>Campus Connect</h1>
+        <p class="tagline">Bridge to Your IUB Community</p>
+      </div>
+    </a>
+  </header>
+
+  <main>
+    <form id="loginForm" class="form-card">
+      <h2>Login</h2>
+
+      <input type="email" id="email" placeholder="Email" required />
+
+      <input type="password" id="password" placeholder="Password" required />
+
+      <select id="role" required>
+        <option value="">Select Role</option>
+        <option value="student">Student</option>
+        <option value="admin">Admin / Staff</option>
+      </select>
+
+      <button type="submit">Login</button>
+
+      <p class="form-footer">
+        Don't have an account? <a href="signup.html">Sign up here</a>
+      </p>
+
+      <p id="loginMessage" class="validation-msg"></p>
+    </form>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

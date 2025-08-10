@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background: #004080;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.logo {
+    height: 50px;
+    margin-right: 10px;
+}
+
+.logo-title {
+    display: flex;
+    align-items: center;
+}
+
+.back-button {
+    color: white;
+    text-decoration: none;
+    background: crimson;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+
+main.dashboard {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+.profile-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.profile-card p {
+    margin: 8px 0;
+}
+
+.dashboard-links a {
+    display: inline-block;
+    background: #004080;
+    color: white;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.dashboard-links a:hover {
+    background: #0066cc;
+}
+
+.footer {
+    text-align: center;
+    background: #004080;
+    color: white;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

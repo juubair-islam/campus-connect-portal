@@ -1,0 +1,262 @@
+/* General styles */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4fbfe;
+  color: #1e3a5f;
+}
+
+header.header {
+  background-color: #d6f0fc;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #b6e0f7;
+  animation: slideInTop 1s ease;
+}
+
+.logo-title {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+  color: inherit;
+}
+
+.logo {
+  width: 100px;
+  height: 60px;
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #007cc7;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 14px;
+  color: #3d6e90;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+form {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 124, 199, 0.1);
+  width: 100%;
+  max-width: 650px;
+  animation: fadeIn 1.5s ease;
+}
+
+form h2 {
+  text-align: center;
+  color: #007cc7;
+}
+
+.connect-tag {
+  text-align: center;
+  font-size: 16px;
+  color: #004e7c;
+  font-weight: 500;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+input,
+select,
+button[type="button"] {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #a3d5f7;
+  border-radius: 8px;
+  background: #f7fcff;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+button[type="button"]:focus {
+  outline: none;
+  border-color: #007cc7;
+  box-shadow: 0 0 0 2px #cbeeff;
+}
+
+button[type="button"] {
+  flex: 0 0 120px;
+  background: #007cc7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+button[type="button"]:hover {
+  background: #005f96;
+}
+
+.role-select {
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.role-option {
+  background: #e5f4fc;
+  border: 2px solid transparent;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #005b9f;
+  cursor: pointer;
+  transition: 0.3s ease;
+  user-select: none;
+}
+
+.role-option:hover {
+  background: #cbeeff;
+}
+
+.role-option input {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  width: 100%;
+  background: #007cc7;
+  color: white;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background: #005f96;
+}
+
+.validation-msg {
+  display: block;
+  text-align: center;
+  font-size: 14px;
+  color: crimson;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  min-height: 20px;
+}
+
+.alumni-heading {
+  font-size: 16px;
+  font-weight: bold;
+  color: #005b9f;
+  margin: 10px 0;
+}
+
+/* Animations */
+@keyframes slideInTop {
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-group {
+    flex-direction: column;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .header-text h1 {
+    font-size: 20px;
+  }
+}
+
+.double-field {
+  display: flex;
+  gap: 15px;
+}
+
+.double-field input {
+  flex: 1;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.success-msg {
+  text-align: center;
+  margin: 20px 0 30px 0;  /* Added margin-bottom to avoid overlapping */
+  background: #e6ffec;
+  color: #207544;
+  border: 1px solid #a5e3b8;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  display: none;
+  animation: fadeIn 0.8s ease-in;
+  min-height: 30px;
+}
+
+/* Back button in header */
+.back-button {
+  text-decoration: none;
+  background-color: #007cc7;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #005f96;
+}
+
+/* Adjust header to space between logo & back button */
+header.header {
+  justify-content: space-between;
+}
