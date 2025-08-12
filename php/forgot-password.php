@@ -55,17 +55,36 @@ if ($action === 'verify') {
     }
 
     if (!$user) {
+        // Search in admins table
+        $stmt = $pdo->prepare("SELECT username AS userId, email, role FROM admins WHERE username = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Note: admins may not have contact_number column, so only email check
+        if ($user) {
+            // We'll treat admin contact check only by email (userContact)
+            if (strcasecmp($userContact, $user['email']) !== 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Contact info does not match']);
+                exit;
+            }
+        }
+    }
+
+    if (!$user) {
         http_response_code(404);
         echo json_encode(['error' => 'User ID not found']);
         exit;
     }
 
-    // Check if email or contact matches
-    if (strcasecmp($userContact, $user['email']) !== 0 && strcasecmp($userContact, $user['contact_number']) !== 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Contact info does not match']);
-        exit;
+    // For students and staff, check if contact matches either email or contact_number
+    if (isset($user['contact_number'])) {
+        if (strcasecmp($userContact, $user['email']) !== 0 && strcasecmp($userContact, $user['contact_number']) !== 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Contact info does not match']);
+            exit;
+        }
     }
+    // For admins, we already validated contact above
 
     // Return success with role & userId for next step
     echo json_encode(['success' => 'User verified', 'user' => ['userId' => $user['userId'], 'role' => $user['role']]]);
@@ -98,6 +117,17 @@ if ($action === 'verify') {
         }
     } elseif ($role === 'administrative_staff') {
         $stmt = $pdo->prepare("UPDATE administrative_staff SET password = ? WHERE employee_id = ?");
+        $stmt->execute([$passwordHash, $userId]);
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(['success' => 'Password updated successfully']);
+            exit;
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Password update failed']);
+            exit;
+        }
+    } elseif ($role === 'admin') {
+        $stmt = $pdo->prepare("UPDATE admins SET password = ? WHERE username = ?");
         $stmt->execute([$passwordHash, $userId]);
         if ($stmt->rowCount() > 0) {
             echo json_encode(['success' => 'Password updated successfully']);

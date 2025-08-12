@@ -27,20 +27,91 @@ CREATE TABLE administrative_staff (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE admins (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  uid CHAR(36) NOT NULL UNIQUE,         -- UUID for global unique ID
-  username VARCHAR(50) NOT NULL UNIQUE, -- e.g., '2221134'
-  full_name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) UNIQUE,
-  password VARCHAR(255) NOT NULL,        -- hashed password
-  role VARCHAR(50) DEFAULT 'admin',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_login TIMESTAMP NULL
-);
-
-
 UPDATE administrative_staff
 SET role = 'administrative_staff'
 WHERE role = 'administrative_';
+
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    uid CHAR(36) NOT NULL UNIQUE,         -- UUID for secure, unique identifier
+    username VARCHAR(50) NOT NULL UNIQUE, -- Login ID (e.g., 2221134)
+    full_name VARCHAR(100) NOT NULL,      -- Admin's full name
+    email VARCHAR(100) NOT NULL UNIQUE,   -- Contact email
+    password VARCHAR(255) NOT NULL,       -- Hashed password
+    role ENUM('admin') DEFAULT 'admin',   -- Role type
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE courses (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_uid CHAR(36) NOT NULL,
+    course_code VARCHAR(20) NOT NULL UNIQUE,
+    course_name VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    credits INT NOT NULL,
+    description TEXT NOT NULL,
+    available_days VARCHAR(50) NOT NULL,    -- e.g. "Mon,Wed,Fri"
+    start_time TIME NOT NULL,                -- e.g. '07:00:00'
+    end_time TIME NOT NULL,                  -- e.g. '19:00:00'
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tutor_uid) REFERENCES students(uid) ON DELETE CASCADE
+);
+
+CREATE TABLE posts (
+    post_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    post_title VARCHAR(255) NOT NULL,
+    post_content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
+
+CREATE TABLE course_requests (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    learner_uid CHAR(36) NOT NULL,
+    status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY (learner_uid) REFERENCES students(uid) ON DELETE CASCADE,
+    UNIQUE (course_id, learner_uid)
+);
+
+CREATE TABLE course_enrollments (
+    enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    learner_uid CHAR(36) NOT NULL,
+    enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY (learner_uid) REFERENCES students(uid) ON DELETE CASCADE,
+    UNIQUE KEY unique_enrollment (course_id, learner_uid)
+);
+
+CREATE TABLE course_materials (
+    material_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    file_url VARCHAR(500),
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
+
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    sender_uid CHAR(36) NOT NULL,
+    receiver_uid CHAR(36) NOT NULL,
+    message_text TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_status BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_uid) REFERENCES students(uid) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_uid) REFERENCES students(uid) ON DELETE CASCADE
+);
+
+ALTER TABLE courses
+DROP COLUMN subject,
+DROP COLUMN credits;
 

@@ -104,6 +104,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Campus Connect - Login</title>
   <link rel="stylesheet" href="css/signup.css" />
   <link rel="stylesheet" href="css/login.css" />
+  <style>
+    /* Select Role Dropdown */
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+    }
+    select:focus {
+      outline: none;
+      border-color: #007cc7;
+      box-shadow: 0 0 6px rgba(0, 124, 199, 0.4);
+      background-color: #e5f4fc;
+    }
+
+    /* Forgot Password Section */
+    .forgot-section {
+      margin-top: 12px;
+      text-align: right;
+    }
+    .forgot-password a {
+      color: #007cc7;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.95em;
+      transition: color 0.3s ease;
+    }
+    .forgot-password a:hover,
+    .forgot-password a:focus {
+      color: #005fa3;
+      text-decoration: underline;
+    }
+
+    /* Remove the Here I Am button styling */
+
+  </style>
 </head>
 <body>
 <header class="header">
@@ -123,9 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Dropdown for Role Selection -->
     <div class="form-group">
-      <label for="role">Select Role</label>
       <select name="role" id="role" required>
-        <option value="">-- Select Role --</option>
+        <option value="">Select Your Role</option>
         <option value="student">Student</option>
         <option value="administrative_staff">Administrative Staff</option>
         <option value="admin">Admin</option>
@@ -142,12 +184,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <button type="submit">Login</button>
 
-    <!-- Forgot Password & Here I Am -->
+    <!-- Forgot Password only -->
     <div class="forgot-section">
       <p class="forgot-password">
         <a href="forgot-password.html">Forgot Password?</a>
       </p>
-      <button type="button" class="here-btn">Here I Am</button>
     </div>
 
     <div id="loginStatus" class="validation-msg"></div>
