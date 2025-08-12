@@ -1,13 +1,12 @@
 <?php
 session_start();
 
-// If user not logged in or role is not student → redirect to login
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+// Allow only admin role
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
-// DB connection
 $host = "localhost";
 $dbname = "campus_connect_portal";
 $username = "root";
@@ -20,29 +19,20 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-// Fetch student info
-$stmt = $pdo->prepare("SELECT iub_id, name, department, major, minor, email, contact_number, role, created_at
-                       FROM students
-                       WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$student = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// If no student found (shouldn’t happen normally)
-if (!$student) {
-    session_destroy();
-    header("Location: login.php");
-    exit();
-}
+// Since your admin login is hardcoded and session 'name' is 'Admin', you might not have admin details in DB.
+// But if you want, you can create an admins table and fetch details here.
+// For now, just use session name.
+$adminName = $_SESSION['name'] ?? 'Admin';
 
 // Extract first name for greeting
-$firstName = explode(' ', trim($student['name']))[0];
+$firstName = explode(' ', trim($adminName))[0];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Dashboard - Campus Connect</title>
+  <title>Admin Dashboard - Campus Connect</title>
   <link rel="stylesheet" href="css/student.css" />
 </head>
 <body>
@@ -56,38 +46,38 @@ $firstName = explode(' ', trim($student['name']))[0];
     </div>
   </div>
   <div class="header-right">
-    <span class="user-name"><?php echo htmlspecialchars($student['name']); ?></span>
+    <span class="user-name"><?php echo htmlspecialchars($adminName); ?></span>
     <a href="logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
 
 <nav class="top-nav">
-  <a href="StudentProfile.php">👤 Profile</a>
-  <a href="#">🏷️ Lost &amp; Found</a>
-  <a href="#">📹 CCTV Reporting</a>
-  <a href="#">📅 Event Booking</a>
-  <a href="#">🎓 Tutor/Learner Panel</a>
+  <a href="#">👤 Profile</a>
+  <a href="#">📋 Manage Users</a>
+  <a href="#">📊 Reports</a>
+  <a href="#">⚙️ Settings</a>
+  <!-- Add more admin-specific links -->
 </nav>
 
 <main class="dashboard">
   <section class="activity-gist">
-    <h2>📊 <?php echo htmlspecialchars($firstName); ?>'s Recent Activity</h2>
+    <h2>📊 <?php echo htmlspecialchars($firstName); ?>'s Admin Overview</h2>
     <div class="activity-cards">
       <div class="activity-card">
-        <h3>Lost & Found Reports</h3>
-        <p>You have reported <strong>3</strong> items recently.</p>
+        <h3>User Registrations</h3>
+        <p><strong>15</strong> new users registered this week.</p>
       </div>
       <div class="activity-card">
-        <h3>CCTV Reports</h3>
-        <p><strong>2</strong> reports are under review.</p>
+        <h3>Pending Approvals</h3>
+        <p><strong>4</strong> requests waiting for approval.</p>
       </div>
       <div class="activity-card">
-        <h3>Event Bookings</h3>
-        <p>You have <strong>5</strong> upcoming events.</p>
+        <h3>System Alerts</h3>
+        <p><strong>2</strong> critical alerts issued.</p>
       </div>
       <div class="activity-card">
-        <h3>Tutor/Learner Sessions</h3>
-        <p><strong>4</strong> sessions scheduled this month.</p>
+        <h3>Announcements</h3>
+        <p><strong>3</strong> new announcements posted.</p>
       </div>
     </div>
   </section>

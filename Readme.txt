@@ -26,3 +26,21 @@ CREATE TABLE administrative_staff (
     role VARCHAR(15) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE admins (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  uid CHAR(36) NOT NULL UNIQUE,         -- UUID for global unique ID
+  username VARCHAR(50) NOT NULL UNIQUE, -- e.g., '2221134'
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  password VARCHAR(255) NOT NULL,        -- hashed password
+  role VARCHAR(50) DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_login TIMESTAMP NULL
+);
+
+
+UPDATE administrative_staff
+SET role = 'administrative_staff'
+WHERE role = 'administrative_';
+

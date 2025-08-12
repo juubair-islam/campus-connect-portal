@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// If user not logged in or role is not student → redirect to login
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: login.php");
     exit();
 }
 
-// DB connection
 $host = "localhost";
 $dbname = "campus_connect_portal";
 $username = "root";
@@ -20,29 +18,24 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-// Fetch student info
 $stmt = $pdo->prepare("SELECT iub_id, name, department, major, minor, email, contact_number, role, created_at
                        FROM students
                        WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// If no student found (shouldn’t happen normally)
 if (!$student) {
     session_destroy();
     header("Location: login.php");
     exit();
 }
-
-// Extract first name for greeting
-$firstName = explode(' ', trim($student['name']))[0];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Dashboard - Campus Connect</title>
+  <title>Student Profile - Campus Connect</title>
   <link rel="stylesheet" href="css/student.css" />
 </head>
 <body>
@@ -62,7 +55,7 @@ $firstName = explode(' ', trim($student['name']))[0];
 </header>
 
 <nav class="top-nav">
-  <a href="StudentProfile.php">👤 Profile</a>
+  <a href="StudentProfile.php" class="active">👤 Profile</a>
   <a href="#">🏷️ Lost &amp; Found</a>
   <a href="#">📹 CCTV Reporting</a>
   <a href="#">📅 Event Booking</a>
@@ -70,25 +63,18 @@ $firstName = explode(' ', trim($student['name']))[0];
 </nav>
 
 <main class="dashboard">
-  <section class="activity-gist">
-    <h2>📊 <?php echo htmlspecialchars($firstName); ?>'s Recent Activity</h2>
-    <div class="activity-cards">
-      <div class="activity-card">
-        <h3>Lost & Found Reports</h3>
-        <p>You have reported <strong>3</strong> items recently.</p>
-      </div>
-      <div class="activity-card">
-        <h3>CCTV Reports</h3>
-        <p><strong>2</strong> reports are under review.</p>
-      </div>
-      <div class="activity-card">
-        <h3>Event Bookings</h3>
-        <p>You have <strong>5</strong> upcoming events.</p>
-      </div>
-      <div class="activity-card">
-        <h3>Tutor/Learner Sessions</h3>
-        <p><strong>4</strong> sessions scheduled this month.</p>
-      </div>
+  <section class="profile-section">
+    <h2>📋 Student Profile</h2>
+    <div class="profile-card">
+      <p><strong>Name:</strong> <?php echo htmlspecialchars($student['name']); ?></p>
+      <p><strong>IUB ID:</strong> <?php echo htmlspecialchars($student['iub_id']); ?></p>
+      <p><strong>Department:</strong> <?php echo htmlspecialchars($student['department']); ?></p>
+      <p><strong>Major:</strong> <?php echo htmlspecialchars($student['major']); ?></p>
+      <p><strong>Minor:</strong> <?php echo htmlspecialchars($student['minor']); ?></p>
+      <p><strong>Email:</strong> <?php echo htmlspecialchars($student['email']); ?></p>
+      <p><strong>Contact:</strong> <?php echo htmlspecialchars($student['contact_number']); ?></p>
+      <p><strong>Role:</strong> <?php echo htmlspecialchars($student['role']); ?></p>
+      <p><strong>Joined On:</strong> <?php echo date("F j, Y", strtotime($student['created_at'])); ?></p>
     </div>
   </section>
 </main>

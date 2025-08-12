@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Redirect after 3 seconds to login page
         setTimeout(() => {
-          window.location.href = "login.html";
+          window.location.href = "login.php";
         }, 3000);
       } else {
         formStatus.textContent = result.error || "Signup failed. Try again.";

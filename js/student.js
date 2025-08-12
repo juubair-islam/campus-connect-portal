@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!data.success) {
       alert(data.error || "Not logged in. Redirecting to login.");
-      location.href = "login.html";
+      location.href = "login.php";
       return;
     }
 
@@ -34,6 +34,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   logoutBtn.addEventListener("click", async () => {
     await fetch("php/logout.php");
-    location.href = "login.html";
+    location.href = "login.php";
   });
 });

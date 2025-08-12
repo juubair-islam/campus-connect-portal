@@ -1,13 +1,12 @@
 <?php
 session_start();
 
-// If user not logged in or role is not student → redirect to login
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+// Correct role check: administrative_staff or admin allowed
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'administrative_staff' && $_SESSION['role'] !== 'admin')) {
     header("Location: login.php");
     exit();
 }
 
-// DB connection
 $host = "localhost";
 $dbname = "campus_connect_portal";
 $username = "root";
@@ -20,29 +19,28 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-// Fetch student info
-$stmt = $pdo->prepare("SELECT iub_id, name, department, major, minor, email, contact_number, role, created_at
-                       FROM students
+// Fetch staff info by session user_id
+$stmt = $pdo->prepare("SELECT uid, full_name, employee_id, department, contact_number, iub_email, role, created_at 
+                       FROM administrative_staff 
                        WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
-$student = $stmt->fetch(PDO::FETCH_ASSOC);
+$staff = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// If no student found (shouldn’t happen normally)
-if (!$student) {
+if (!$staff) {
     session_destroy();
     header("Location: login.php");
     exit();
 }
 
 // Extract first name for greeting
-$firstName = explode(' ', trim($student['name']))[0];
+$firstName = explode(' ', trim($staff['full_name']))[0];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Dashboard - Campus Connect</title>
+  <title>Staff Dashboard - Campus Connect</title>
   <link rel="stylesheet" href="css/student.css" />
 </head>
 <body>
@@ -56,17 +54,17 @@ $firstName = explode(' ', trim($student['name']))[0];
     </div>
   </div>
   <div class="header-right">
-    <span class="user-name"><?php echo htmlspecialchars($student['name']); ?></span>
+    <span class="user-name"><?php echo htmlspecialchars($staff['full_name']); ?></span>
     <a href="logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
 
 <nav class="top-nav">
-  <a href="StudentProfile.php">👤 Profile</a>
+  <a href="#">📋 Profile</a>
   <a href="#">🏷️ Lost &amp; Found</a>
   <a href="#">📹 CCTV Reporting</a>
   <a href="#">📅 Event Booking</a>
-  <a href="#">🎓 Tutor/Learner Panel</a>
+  <!-- Add any staff-specific links if needed -->
 </nav>
 
 <main class="dashboard">
@@ -74,20 +72,20 @@ $firstName = explode(' ', trim($student['name']))[0];
     <h2>📊 <?php echo htmlspecialchars($firstName); ?>'s Recent Activity</h2>
     <div class="activity-cards">
       <div class="activity-card">
-        <h3>Lost & Found Reports</h3>
-        <p>You have reported <strong>3</strong> items recently.</p>
+        <h3>Administrative Tasks</h3>
+        <p>You have <strong>3</strong> tasks pending.</p>
       </div>
       <div class="activity-card">
-        <h3>CCTV Reports</h3>
-        <p><strong>2</strong> reports are under review.</p>
+        <h3>Reports to Review</h3>
+        <p><strong>2</strong> reports waiting for your approval.</p>
       </div>
       <div class="activity-card">
-        <h3>Event Bookings</h3>
-        <p>You have <strong>5</strong> upcoming events.</p>
+        <h3>Meetings Scheduled</h3>
+        <p>You have <strong>4</strong> meetings this week.</p>
       </div>
       <div class="activity-card">
-        <h3>Tutor/Learner Sessions</h3>
-        <p><strong>4</strong> sessions scheduled this month.</p>
+        <h3>Announcements</h3>
+        <p><strong>1</strong> new announcement posted.</p>
       </div>
     </div>
   </section>
