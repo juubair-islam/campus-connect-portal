@@ -18,6 +18,7 @@ try {
     die("DB connection failed: " . $e->getMessage());
 }
 
+// Fetch tutor info
 $stmt = $pdo->prepare("SELECT uid, name FROM students WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,18 +35,20 @@ if (!$course_id || !is_numeric($course_id)) {
 }
 
 // Verify that this course belongs to this tutor
-$stmt = $pdo->prepare("SELECT course_name FROM courses WHERE course_id = ? AND tutor_uid = ?");
+$stmt = $pdo->prepare("SELECT course_code, course_name FROM courses WHERE course_id = ? AND tutor_uid = ?");
 $stmt->execute([$course_id, $tutor['uid']]);
 $course = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$course) {
-    die("Course not found or you do not have permission to manage its materials.");
+    die("Course not found or you do not have permission to view it.");
 }
 
+// -----------------
+// Handle file upload
+// -----------------
 $errors = [];
 $success = "";
 
-// Handle file upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -54,26 +57,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title) $errors[] = "Title is required.";
     if (!$description) $errors[] = "Description is required.";
 
-    // Check file upload
     if (!isset($_FILES['material_file']) || $_FILES['material_file']['error'] === UPLOAD_ERR_NO_FILE) {
         $errors[] = "Please upload a file.";
     } elseif ($_FILES['material_file']['error'] !== UPLOAD_ERR_OK) {
         $errors[] = "Error uploading file.";
     } else {
-        $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'application/zip'];
+        $allowed_types = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','application/zip'];
         $file_type = $_FILES['material_file']['type'];
-
         if (!in_array($file_type, $allowed_types)) {
             $errors[] = "Unsupported file type. Allowed: PDF, DOC, DOCX, JPEG, PNG, ZIP.";
         }
     }
 
     if (empty($errors)) {
-        // Save file to uploads/materials folder
         $upload_dir = __DIR__ . '/../uploads/materials/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+
         $original_name = basename($_FILES['material_file']['name']);
         $extension = pathinfo($original_name, PATHINFO_EXTENSION);
         $new_filename = uniqid('material_', true) . '.' . $extension;
@@ -81,11 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($_FILES['material_file']['tmp_name'], $destination)) {
             $file_url = 'uploads/materials/' . $new_filename;
-
-            // Insert record into DB
             $insert = $pdo->prepare("INSERT INTO course_materials (course_id, title, description, file_url) VALUES (?, ?, ?, ?)");
             $insert->execute([$course_id, $title, $description, $file_url]);
-
             $success = "Material uploaded successfully!";
         } else {
             $errors[] = "Failed to move uploaded file.";
@@ -93,34 +89,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Handle deletion of a material (via GET parameter ?delete=material_id)
+// Handle deletion
 if (isset($_GET['delete'])) {
     $delete_id = intval($_GET['delete']);
-
-    // Check that material belongs to this tutor's course
     $checkStmt = $pdo->prepare("SELECT file_url FROM course_materials WHERE material_id = ? AND course_id = ?");
     $checkStmt->execute([$delete_id, $course_id]);
     $material = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
     if ($material) {
-        // Delete file from server
         $file_path = __DIR__ . '/../' . $material['file_url'];
-        if (file_exists($file_path)) {
-            unlink($file_path);
-        }
-
-        // Delete DB record
+        if (file_exists($file_path)) unlink($file_path);
         $delStmt = $pdo->prepare("DELETE FROM course_materials WHERE material_id = ?");
         $delStmt->execute([$delete_id]);
-
-        header("Location: tutor-course-materials.php?course_id=$course_id");
+        header("Location: tutor-course-details.php?course_id=$course_id");
         exit();
     } else {
-        $errors[] = "Material not found or you don't have permission to delete it.";
+        $errors[] = "Material not found or permission denied.";
     }
 }
 
-// Fetch all materials for this course
+// Fetch enrolled learners
+$enrollStmt = $pdo->prepare("
+    SELECT s.name AS learner_name, ce.enrollment_date
+    FROM course_enrollments ce
+    JOIN students s ON ce.learner_uid = s.uid
+    WHERE ce.course_id = ?
+    ORDER BY ce.enrollment_date DESC
+");
+$enrollStmt->execute([$course_id]);
+$enrolledLearners = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch materials
 $materialsStmt = $pdo->prepare("SELECT * FROM course_materials WHERE course_id = ? ORDER BY upload_date DESC");
 $materialsStmt->execute([$course_id]);
 $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -131,84 +130,37 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Manage Course Materials - Campus Connect</title>
+<title>Course Details - <?php echo htmlspecialchars($course['course_name']); ?></title>
 <link rel="stylesheet" href="../css/student.css" />
 <style>
-  main {
-    max-width: 900px;
-    margin: 1em auto;
-    background: #e5f4fc;
-    padding: 1.5em;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,124,199,0.15);
-  }
-  h2.course-title {
-    color: #007cc7;
-  }
-  form label {
-    display: block;
-    margin: 0.8em 0 0.3em;
-    font-weight: 600;
-  }
-  form input[type=text], form textarea {
-    width: 100%;
-    padding: 0.5em;
-    border: 1px solid #007cc7;
-    border-radius: 4px;
-    font-size: 1em;
-    font-family: inherit;
-    box-sizing: border-box;
-  }
-  form textarea {
-    resize: vertical;
-  }
-  form input[type=file] {
-    margin-top: 0.3em;
-  }
-  form button {
-    margin-top: 1em;
-    background-color: #007cc7;
-    border: none;
-    color: white;
-    padding: 0.7em 1.5em;
-    font-size: 1.1em;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  form button:hover {
-    background-color: #005fa3;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1.2em;
-  }
-  th, td {
-    padding: 0.7em;
-    border: 1px solid #007cc7;
-    text-align: left;
-  }
-  th {
-    background-color: #007cc7;
-    color: white;
-  }
-  a.delete-link {
-    color: crimson;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  a.delete-link:hover {
-    text-decoration: underline;
-  }
-  .error-msg {
-    color: crimson;
-    margin-top: 1em;
-  }
-  .success-msg {
-    color: green;
-    margin-top: 1em;
-  }
+main {
+  max-width: 900px;
+  margin: 1em auto;
+  background: #e5f4fc;
+  padding: 1.5em;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,124,199,0.15);
+}
+h2.course-title {
+  color: #007cc7;
+  margin-bottom: 1em;
+  border-bottom: 2px solid #007cc7;
+  padding-bottom: 0.2em;
+}
+h3.section-title { color: #005b9f; margin-top: 1.5em; }
+form label { display: block; margin: 0.8em 0 0.3em; font-weight: 600; }
+form input[type=text], form textarea { width: 100%; padding: 0.5em; border: 1px solid #007cc7; border-radius: 4px; }
+form textarea { resize: vertical; }
+form input[type=file] { margin-top: 0.3em; }
+form button { margin-top: 1em; background-color: #007cc7; border: none; color: white; padding: 0.7em 1.5em; border-radius: 5px; cursor: pointer; }
+form button:hover { background-color: #005fa3; }
+table { width: 100%; border-collapse: collapse; margin-top: 0.7em; }
+th, td { padding: 0.6em; border: 1px solid #007cc7; text-align: left; }
+th { background-color: #007cc7; color: white; }
+a.delete-link { color: crimson; text-decoration: none; font-weight: 600; }
+a.delete-link:hover { text-decoration: underline; }
+.error-msg { color: crimson; margin-top: 1em; }
+.success-msg { color: green; margin-top: 1em; }
 </style>
 </head>
 <body>
@@ -226,6 +178,8 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="../logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
+
+<!-- Top Navigation Bar -->
 <nav class="top-nav">
   <a href="StudentProfile.php" class="active">Profile</a>
   <a href="lost-found.php">Lost &amp; Found</a>
@@ -252,8 +206,35 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </nav>
 
+
 <main>
-  <h2 class="course-title">Manage Materials for: <?php echo htmlspecialchars($course['course_name']); ?></h2>
+  <h2 class="course-title"><?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?></h2>
+
+  <!-- Enrolled Learners -->
+  <h3 class="section-title">📚 Enrolled Learners</h3>
+  <?php if (empty($enrolledLearners)): ?>
+    <p>No learners enrolled in this course yet.</p>
+  <?php else: ?>
+    <table>
+      <thead>
+        <tr>
+          <th>Learner Name</th>
+          <th>Enrollment Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($enrolledLearners as $learner): ?>
+          <tr>
+            <td><?php echo htmlspecialchars($learner['learner_name']); ?></td>
+            <td><?php echo date("M d, Y H:i", strtotime($learner['enrollment_date'])); ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
+
+  <!-- Upload Materials -->
+  <h3 class="section-title">📁 Upload Materials</h3>
 
   <?php if ($errors): ?>
     <div class="error-msg">
@@ -264,7 +245,6 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
       </ul>
     </div>
   <?php endif; ?>
-
   <?php if ($success): ?>
     <div class="success-msg"><?php echo htmlspecialchars($success); ?></div>
   <?php endif; ?>
@@ -282,6 +262,8 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
     <button type="submit">Upload Material</button>
   </form>
 
+  <!-- Existing Materials -->
+  <h3 class="section-title">📄 Uploaded Materials</h3>
   <?php if (empty($materials)): ?>
     <p>No materials uploaded yet.</p>
   <?php else: ?>
@@ -314,6 +296,5 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
 <footer class="footer">
   <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
 </footer>
-
 </body>
 </html>

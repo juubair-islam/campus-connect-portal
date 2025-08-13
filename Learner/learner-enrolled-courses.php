@@ -133,14 +133,29 @@ function formatTimeRange($start, $end) {
 </header>
 
 <nav class="top-nav">
-  <a href="../StudentProfile.php">👤 Profile</a>
-  <a href="../lost-found.php">🏷️ Lost &amp; Found</a>
-  <a href="../cctv-reporting.php">📹 CCTV Reporting</a>
-  <a href="../event-booking.php">📅 Event Booking</a>
-  <a href="learner-dashboard.php">🎓 Learner Panel</a>
-  <a href="learner-courses-list.php">📚 Available Courses</a>
-  <a href="learner-course-requests.php">📨 Course Requests</a>
-  <a href="learner-course-materials.php">📁 Course Materials</a>
+  <a href="StudentProfile.php" class="active">Profile</a>
+  <a href="lost-found.php">Lost &amp; Found</a>
+  <a href="cctv-reporting.php">CCTV Reporting</a>
+  <a href="event-booking.php">Event Booking</a>
+
+  <!-- Tutor Menu -->
+  <div class="dropdown">
+    <span class="dropbtn">Tutor ▾</span>
+    <div class="dropdown-content">
+      <a href="tutor/tutor-courses-list.php">My Courses</a>
+      <a href="tutor/tutor-course-requests.php">Course Requests</a>
+    </div>
+  </div>
+
+  <!-- Learner Dropdown -->
+  <div class="dropdown">
+    <a href="#" class="dropbtn">Learner▾</a>
+    <div class="dropdown-content">
+      <a href="learner/learner-courses-list.php">Find Course</a>
+      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
+    </div>
+  </div>
+  </div>
 </nav>
 
 <main>

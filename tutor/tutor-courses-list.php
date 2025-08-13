@@ -34,7 +34,6 @@ $firstName = explode(' ', trim($student['name']))[0];
 $stmt = $pdo->prepare("SELECT * FROM courses WHERE tutor_uid = ? ORDER BY created_at DESC");
 $stmt->execute([$student['uid']]);
 $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -73,13 +72,13 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     tr:hover {
       background-color: #d9f0ff;
     }
-    .actions a {
+    .actions a, .details a {
       margin-right: 0.75em;
       color: #007cc7;
       font-weight: 600;
       text-decoration: none;
     }
-    .actions a:hover {
+    .actions a:hover, .details a:hover {
       text-decoration: underline;
     }
     .no-courses {
@@ -101,6 +100,84 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     .create-course-btn:hover {
       background-color: #005fa3;
     }
+
+
+/* Table action buttons */
+.actions a, .details a {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-radius: 5px;
+    text-decoration: none; /* Remove underline */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin-right: 5px; /* space between buttons */
+}
+
+/* View Details button */
+.details a {
+    background-color: #007cc7;
+    color: white;
+}
+
+.details a:hover {
+    background-color: #005fa3;
+}
+
+/* Edit button */
+.actions a[href*="edit"] {
+    background-color: #28a745; /* green */
+    color: white;
+}
+
+.actions a[href*="edit"]:hover {
+    background-color: #1e7e34;
+}
+
+/* Delete button */
+.actions a[href*="delete"] {
+    background-color: #dc3545; /* red */
+    color: white;
+}
+
+.actions a[href*="delete"]:hover {
+    background-color: #b02a37;
+}
+
+/* Ensure Edit and Delete are inline without wrapping */
+.actions {
+    white-space: nowrap;
+}
+
+
+
+/* Bold Course Code and Course Name */
+table tbody tr td:nth-child(1){
+    font-weight: 700; /* bold */
+}
+/* Table borders and separation */
+table {
+    width: 100%;
+    border-collapse: collapse; /* keeps borders together */
+}
+
+th, td {
+    padding: 0.75em 1em;
+    border: 1px solid #007cc7; /* full border around each cell */
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #007cc7;
+    color: white;
+    font-weight: 700;
+}
+
+tr:hover {
+    background-color: #d9f0ff;
+}
+
   </style>
   <script>
     function confirmDelete(courseName) {
@@ -123,16 +200,31 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="../logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
-
 <nav class="top-nav">
-  <a href="../StudentProfile.php">👤 Profile</a>
-  <a href="../lost-found.php">🏷️ Lost &amp; Found</a>
-  <a href="../cctv-reporting.php">📹 CCTV Reporting</a>
-  <a href="../event-booking.php">📅 Event Booking</a>
-  <a href="../learner/learner-dashboard.php">🎓 Learner Panel</a>
-  <a href="tutor-courses-create.php">➕ Create Course</a>
-</nav>
+  <a href="StudentProfile.php" class="active">Profile</a>
+  <a href="lost-found.php">Lost &amp; Found</a>
+  <a href="cctv-reporting.php">CCTV Reporting</a>
+  <a href="event-booking.php">Event Booking</a>
 
+  <!-- Tutor Menu -->
+  <div class="dropdown">
+    <span class="dropbtn">Tutor ▾</span>
+    <div class="dropdown-content">
+      <a href="tutor/tutor-courses-list.php">My Courses</a>
+      <a href="tutor/tutor-course-requests.php">Course Requests</a>
+    </div>
+  </div>
+
+  <!-- Learner Dropdown -->
+  <div class="dropdown">
+    <a href="#" class="dropbtn">Learner▾</a>
+    <div class="dropdown-content">
+      <a href="learner/learner-courses-list.php">Find Course</a>
+      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
+    </div>
+  </div>
+  </div>
+</nav>
 <main>
   <h2><?php echo htmlspecialchars($firstName); ?>'s Tutor Courses</h2>
 
@@ -147,6 +239,7 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <th>Available Days</th>
           <th>Time</th>
           <th>Description</th>
+          <th>Details</th> <!-- New Details column -->
           <th>Actions</th>
         </tr>
       </thead>
@@ -158,6 +251,9 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?php echo htmlspecialchars($course['available_days']); ?></td>
             <td><?php echo htmlspecialchars($course['start_time']) . " - " . htmlspecialchars($course['end_time']); ?></td>
             <td><?php echo nl2br(htmlspecialchars($course['description'])); ?></td>
+            <td class="details">
+              <a href="tutor-course-details.php?course_id=<?php echo $course['course_id']; ?>">View</a>
+            </td>
             <td class="actions">
               <a href="tutor-course-edit.php?course_id=<?php echo $course['course_id']; ?>">Edit</a>
               <a href="tutor-courses-delete.php?course_id=<?php echo $course['course_id']; ?>" onclick="return confirmDelete('<?php echo htmlspecialchars(addslashes($course['course_name'])); ?>')">Delete</a>

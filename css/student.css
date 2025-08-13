@@ -255,3 +255,114 @@ footer.footer {
   font-weight: 500;
   margin: 10px 0 0 0;
 }
+
+
+/* Navbar */
+nav.top-nav {
+  background: #e5f4fc;
+  padding: 8px 40px;
+  display: flex;
+  justify-content: center;
+  gap: 0; /* remove gap so borders appear continuous */
+  border-bottom: 1px solid #b6e0f7;
+  font-weight: 600;
+  font-size: 15px;
+  user-select: none;
+  flex-wrap: nowrap;
+  position: relative;
+  z-index: 10; /* keep nav on top */
+}
+
+nav.top-nav a, nav.top-nav .dropbtn {
+  color: #005b9f;
+  text-decoration: none;
+  padding: 6px 18px; /* horizontal spacing */
+  border-right: 2px solid #b6e0f7; /* separator line */
+  display: inline-block;
+  transition: background 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  background: transparent;
+  border: none;
+}
+
+nav.top-nav a:last-child,
+nav.top-nav .dropbtn:last-child {
+  border-right: none;
+}
+
+nav.top-nav a:hover,
+nav.top-nav a.active,
+nav.top-nav .dropdown:hover > .dropbtn {
+  background: #007cc7;
+  color: white;
+  border-right-color: #005f96;
+  outline: none;
+}
+
+/* Dropdown container inside nav */
+nav.top-nav .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content */
+nav.top-nav .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #e5f4fc; /* light background consistent with nav */
+  min-width: 180px;
+  box-shadow: 0px 4px 8px rgba(0, 124, 199, 0.2);
+  border-radius: 8px;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  border: 1px solid #b6e0f7;
+}
+
+/* Show dropdown on hover */
+nav.top-nav .dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Dropdown links */
+nav.top-nav .dropdown-content a {
+  color: #005b9f;
+  padding: 10px 18px;
+  text-decoration: none;
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* Hover effect on dropdown links */
+nav.top-nav .dropdown-content a:hover {
+  background-color: #007cc7;
+  color: white;
+  border-radius: 6px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  nav.top-nav {
+    padding: 12px 20px;
+    gap: 10px;
+    overflow-x: auto;
+  }
+  
+  nav.top-nav a, nav.top-nav .dropbtn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  nav.top-nav .dropdown-content {
+    min-width: 140px;
+  }
+  
+  nav.top-nav .dropdown-content a {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
