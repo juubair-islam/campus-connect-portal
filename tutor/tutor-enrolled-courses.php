@@ -109,6 +109,14 @@ foreach ($courses as $course) {
     color: #555;
     margin-top: 0.5em;
   }
+
+  .top-nav .dropbtn.active {
+    background-color: #007cc7;
+    color: #fff;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
 </style>
 </head>
 <body>
@@ -126,31 +134,45 @@ foreach ($courses as $course) {
     <a href="../logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
-<nav class="top-nav">
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-  <a href="cctv-reporting.php">CCTV Reporting</a>
-  <a href="event-booking.php">Event Booking</a>
+<header class="header">
+  <div class="header-left">
+    <img src="../images/logo.png" alt="Campus Connect Logo" class="logo" />
+    <div class="title-text">
+      <h1>Campus Connect</h1>
+      <p class="tagline">Bridge to Your IUB Community</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="user-name"><?php echo htmlspecialchars($tutor['name']); ?></span>
+    <a href="../logout.php" class="logout-btn">Logout</a>
+  </div>
+</header>
 
-  <!-- Tutor Menu -->
+<nav class="top-nav">
+  <a href="../StudentProfile.php">Profile</a>
+  <a href="../lost-found.php">Lost &amp; Found</a>
+  <a href="../cctv-reporting.php">CCTV Reporting</a>
+  <a href="../event-booking.php">Event Booking</a>
+
+  <!-- Tutor Menu (Active) -->
   <div class="dropdown">
-    <span class="dropbtn">Tutor ▾</span>
+    <span class="dropbtn active">Tutor ▾</span>
     <div class="dropdown-content">
-      <a href="tutor/tutor-courses-list.php">My Courses</a>
-      <a href="tutor/tutor-course-requests.php">Course Requests</a>
+      <a href="../tutor/tutor-courses-list.php">My Courses</a>
+      <a href="../tutor/tutor-course-requests.php">Course Requests</a>
     </div>
   </div>
 
   <!-- Learner Dropdown -->
   <div class="dropdown">
-    <a href="#" class="dropbtn">Learner▾</a>
+    <span class="dropbtn">Learner ▾</span>
     <div class="dropdown-content">
-      <a href="learner/learner-courses-list.php">Find Course</a>
-      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
+      <a href="../learner/learner-courses-list.php">Find Course</a>
+      <a href="../learner/learner-enrolled-courses.php">Enrolled Courses</a>
     </div>
   </div>
-  </div>
 </nav>
+
 
 <main>
   <h2>Your Enrolled Learners</h2>

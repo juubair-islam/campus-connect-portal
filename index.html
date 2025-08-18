@@ -1,51 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Campus Connect - Login</title>
-  <link rel="stylesheet" href="css/main.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Connect - Welcome</title>
+  <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/student.css">
 </head>
 <body>
-  <header class="header">
-    <a href="index.html" class="logo-title">
-      <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
-      <div class="header-text">
-        <h1>Campus Connect</h1>
-        <p class="tagline">Bridge to Your IUB Community</p>
-      </div>
-    </a>
-  </header>
 
-  <main>
-    <form id="loginForm" class="form-card">
-      <h2>Login</h2>
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
+    <div class="title-text">
+      <h1>Campus Connect</h1>
+      <p class="tagline">Bridge to Your IUB Community</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="login.php" class="btn btn-login">Login</a>
+    <a href="signup.php" class="btn btn-signup">Sign Up</a>
+  </div>
+</header>
 
-      <input type="email" id="email" placeholder="Email" required />
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-text">
+    <h2>Stay Connected. Stay Informed.</h2>
+    <p>Your one-stop platform for Lost & Found, CCTV reporting, Event Booking, Tutor/Learner services, and more.</p>
+    <div class="hero-buttons">
+      <a href="signup.php" class="btn btn-primary">Get Started</a>
+      <a href="login.php" class="btn btn-secondary">Log In</a>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="images/landing-illustration.svg" alt="Campus Illustration">
+  </div>
+</section>
 
-      <input type="password" id="password" placeholder="Password" required />
+<!-- Features Section -->
+<section class="features">
+  <h2>What You Can Do</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>Lost & Found</h3>
+      <p>Report and recover lost items quickly with the help of your university community.</p>
+    </div>
+    <div class="feature-card">
+      <h3>CCTV Reporting</h3>
+      <p>Submit incident reports directly to the administrative team for review.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Event Booking</h3>
+      <p>Reserve spaces and resources for your events in just a few clicks.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Tutor/Learner Panel</h3>
+      <p>Connect with tutors, enroll in courses, and share educational materials easily.</p>
+    </div>
+  </div>
+</section>
 
-      <select id="role" required>
-        <option value="">Select Role</option>
-        <option value="student">Student</option>
-        <option value="admin">Admin / Staff</option>
-      </select>
+<!-- Footer -->
+<footer class="footer">
+  <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
+</footer>
 
-      <button type="submit">Login</button>
-
-      <p class="form-footer">
-        Don't have an account? <a href="signup.html">Sign up here</a>
-      </p>
-
-      <p id="loginMessage" class="validation-msg"></p>
-    </form>
-  </main>
-
-  <footer class="footer">
-    <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
-  </footer>
-
-  <script src="js/main.js"></script>
-  <script src="js/login.js"></script>
 </body>
 </html>

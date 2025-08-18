@@ -1,0 +1,51 @@
+
+    /* Dropdown style */
+    select {
+      padding: 10px;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      background-color: #fff;
+      transition: border-color 0.3s;
+    }
+    select:focus {
+      border-color: #007cc7;
+      outline: none;
+      box-shadow: 0 0 4px rgba(0, 124, 199, 0.4);
+    }
+
+    /* Forgot Password link */
+    .forgot-password a {
+      color: #007cc7;
+      text-decoration: none;
+      font-size: 0.95em;
+      transition: color 0.3s ease;
+    }
+    .forgot-password a:hover {
+      color: #005fa3;
+      text-decoration: underline;
+    }
+
+    /* New "Here I Am" button */
+    .here-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .here-btn:hover {
+      background-color: #218838;
+    }
+
+    /* Align forgot password & Here I Am */
+    .forgot-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }

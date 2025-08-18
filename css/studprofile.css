@@ -1,0 +1,89 @@
+.dashboard { max-width: 900px; margin: 30px auto; padding: 0 15px; }
+.profile-section h2 { color: #007cc7; margin-bottom: 15px; }
+
+.profile-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,124,199,0.1);
+    margin-bottom: 15px;
+}
+.profile-card p { margin: 8px 0; }
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    display: inline-block;
+    text-align: center;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: flex-end; /* push buttons to the right */
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+/* Edit button */
+.btn-edit {
+    background-color: #007cc7;
+    color: white;
+    padding: 6px 12px;       /* reduced padding */
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn-edit:hover {
+    background-color: #005b9f;
+}
+
+/* Delete button */
+.btn-delete {
+    background-color: #9b1b14;
+    color: white;
+    padding: 6px 12px;       /* reduced padding */
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn-delete:hover {
+    background-color: #7a130f;
+}
+
+/* Cancel button */
+.btn-cancel {
+    background-color: #e0e0e0;  /* light gray */
+    color: #333;                 /* dark text */
+    padding: 6px 12px;           /* reduced padding */
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn-cancel:hover {
+    background-color: #c0c0c0;  /* slightly darker on hover */
+    color: #000;
+}
+
+.alert { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-weight: 600; }
+.alert.success { background: #d4edda; color: #155724; }
+.alert.error { background: #f8d7da; color: #721c24; }
+.alert.warning { background: #fff3cd; color: #856404; }
+
+.confirm-delete p { margin-bottom: 10px; }
+.confirm-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.edit-profile-form { display: flex; flex-direction: column; gap: 12px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,124,199,0.1); }
+.edit-profile-form input { padding: 8px 10px; border-radius: 6px; border: 1px solid #b6e0f7; font-size: 1em; }
+
+.footer { text-align: center; background: #d6f0fc; padding: 15px; }

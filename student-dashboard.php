@@ -36,6 +36,9 @@ if (!$student) {
 
 // Extract first name for greeting
 $firstName = explode(' ', trim($student['name']))[0];
+
+// Get current page filename for active link
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,15 +64,15 @@ $firstName = explode(' ', trim($student['name']))[0];
   </div>
 </header>
 
+<!-- Top Navbar -->
 <nav class="top-nav">
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-  <a href="cctv-reporting.php">CCTV Reporting</a>
-  <a href="event-booking.php">Event Booking</a>
+  <a href="student-dashboard.php" class="<?php echo $currentPage=='student-dashboard.php' ? 'active' : ''; ?>">Home</a>
+  <a href="StudentProfile.php" class="<?php echo $currentPage=='StudentProfile.php' ? 'active' : ''; ?>">Profile</a>
+  <a href="lost-found.php" class="<?php echo $currentPage=='lost-found.php' ? 'active' : ''; ?>">Lost &amp; Found</a>
 
-  <!-- Tutor Menu -->
+  <!-- Tutor Dropdown -->
   <div class="dropdown">
-    <span class="dropbtn">Tutor ▾</span>
+    <span class="dropbtn <?php echo in_array($currentPage, ['tutor-courses-list.php','tutor-course-requests.php']) ? 'active' : ''; ?>">Tutor ▾</span>
     <div class="dropdown-content">
       <a href="tutor/tutor-courses-list.php">My Courses</a>
       <a href="tutor/tutor-course-requests.php">Course Requests</a>
@@ -78,12 +81,11 @@ $firstName = explode(' ', trim($student['name']))[0];
 
   <!-- Learner Dropdown -->
   <div class="dropdown">
-    <a href="#" class="dropbtn">Learner▾</a>
+    <span class="dropbtn <?php echo in_array($currentPage, ['learner-courses-list.php','learner-enrolled-courses.php']) ? 'active' : ''; ?>">Learner ▾</span>
     <div class="dropdown-content">
       <a href="learner/learner-courses-list.php">Find Course</a>
       <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
     </div>
-  </div>
   </div>
 </nav>
 

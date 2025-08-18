@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Only POST method allowed']);
@@ -7,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $host = "localhost";
-$dbname = "campus_connect_portal"; // your DB name exactly
+$dbname = "campus_connect_portal";
 $username = "root";
 $password = "";
 
@@ -16,7 +17,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => 'Database connection failed: '.$e->getMessage()]);
     exit;
 }
 
@@ -29,17 +30,15 @@ if (!$data || !isset($data['role'])) {
 }
 
 function generateUUID() {
-    // Generates a version 4 UUID (random)
     $data = random_bytes(16);
-    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40); // version 4
-    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80); // variant
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
 $role = $data['role'];
 
 if ($role === 'student') {
-    // Required fields for student
     $required = ['iub_id', 'name', 'email', 'password'];
     foreach ($required as $field) {
         if (empty($data[$field])) {
@@ -49,14 +48,14 @@ if ($role === 'student') {
         }
     }
 
-    $iub_id = trim($data['iub_id']);
-    $name = trim($data['name']);
-    $department = isset($data['department']) ? trim($data['department']) : '';
-    $major = isset($data['major']) ? trim($data['major']) : '';
-    $minor = isset($data['minor']) ? trim($data['minor']) : '';
-    $email = trim($data['email']);
-    $contact_number = isset($data['contact_number']) ? trim($data['contact_number']) : '';
-    $password = $data['password'];
+    $iub_id         = trim($data['iub_id']);
+    $name           = trim($data['name']);
+    $department     = !empty($data['department']) ? trim($data['department']) : '';
+    $major          = !empty($data['major']) ? trim($data['major']) : '';
+    $minor          = !empty($data['minor']) ? trim($data['minor']) : '';
+    $email          = trim($data['email']);
+    $contact_number = !empty($data['contact_number']) ? trim($data['contact_number']) : '';
+    $password       = $data['password'];
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
@@ -76,13 +75,13 @@ if ($role === 'student') {
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $uid = generateUUID();
 
-    $stmt = $pdo->prepare("INSERT INTO students (uid, iub_id, name, department, major, minor, email, contact_number, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'student')");
     try {
+        $stmt = $pdo->prepare("INSERT INTO students (uid, iub_id, name, department, major, minor, email, contact_number, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'student')");
         $stmt->execute([$uid, $iub_id, $name, $department, $major, $minor, $email, $contact_number, $passwordHash]);
         echo json_encode(['success' => true]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['error' => 'Failed to create student account']);
+        echo json_encode(['error' => 'Failed to create student account: '.$e->getMessage()]);
     }
 } elseif ($role === 'administrative_staff') {
     $required = ['full_name', 'employee_id', 'department', 'iub_email', 'password'];
@@ -94,12 +93,12 @@ if ($role === 'student') {
         }
     }
 
-    $full_name = trim($data['full_name']);
-    $employee_id = trim($data['employee_id']);
-    $department = trim($data['department']);
-    $iub_email = trim($data['iub_email']);
-    $contact_number = isset($data['contact_number']) ? trim($data['contact_number']) : '';
-    $password = $data['password'];
+    $full_name      = trim($data['full_name']);
+    $employee_id    = trim($data['employee_id']);
+    $department     = !empty($data['department']) ? trim($data['department']) : '';
+    $iub_email      = trim($data['iub_email']);
+    $contact_number = !empty($data['contact_number']) ? trim($data['contact_number']) : '';
+    $password       = $data['password'];
 
     if (!filter_var($iub_email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
@@ -119,13 +118,13 @@ if ($role === 'student') {
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $uid = generateUUID();
 
-    $stmt = $pdo->prepare("INSERT INTO administrative_staff (uid, full_name, employee_id, department, contact_number, iub_email, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'administrative_staff')");
     try {
+        $stmt = $pdo->prepare("INSERT INTO administrative_staff (uid, full_name, employee_id, department, contact_number, iub_email, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'administrative_staff')");
         $stmt->execute([$uid, $full_name, $employee_id, $department, $contact_number, $iub_email, $passwordHash]);
         echo json_encode(['success' => true]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['error' => 'Failed to create staff account']);
+        echo json_encode(['error' => 'Failed to create staff account: '.$e->getMessage()]);
     }
 } else {
     http_response_code(400);

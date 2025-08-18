@@ -148,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clearMessages();
 
     const role = document.querySelector('input[name="role"]:checked').value;
-
     let dataToSend = {};
 
     if (role === "student") {
@@ -175,11 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
         role: "student",
         iub_id: iubIdInput.value.trim(),
         name: nameInput.value.trim(),
-        departmentName: departmentInput.value.trim(),
+        department: departmentInput.value.trim(),      // fixed key
         major: majorInput.value.trim(),
         minor: minorInput.value.trim(),
         email: emailInput.value.trim(),
-        contactNumber: contactInput.value.trim(),
+        contact_number: contactInput.value.trim(),     // fixed key
         password: passwordInput.value,
       };
     } else if (role === "administrative_staff") {
@@ -208,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         employee_id: employeeIdInput.value.trim(),
         department: facultyDepartmentSelect.value,
         iub_email: facultyEmailInput.value.trim(),
-        contact_number: facultyContactInput.value.trim(),
+        contact_number: facultyContactInput.value.trim(), // ensured key matches PHP
         password: facultyPasswordInput.value,
       };
     } else {

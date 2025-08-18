@@ -43,13 +43,35 @@ if (!$course) {
     die("Course not found or you do not have permission to view it.");
 }
 
-// -----------------
-// Handle file upload
-// -----------------
 $errors = [];
 $success = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// -----------------
+// Handle Unenroll
+// -----------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_unenroll'])) {
+    $learner_uid = trim($_POST['learner_uid']);
+
+    $checkEnroll = $pdo->prepare("
+        SELECT 1 FROM course_enrollments ce
+        JOIN courses c ON ce.course_id = c.course_id
+        WHERE ce.course_id = ? AND ce.learner_uid = ? AND c.tutor_uid = ?
+    ");
+    $checkEnroll->execute([$course_id, $learner_uid, $tutor['uid']]);
+    
+    if ($checkEnroll->fetch()) {
+        $delEnroll = $pdo->prepare("DELETE FROM course_enrollments WHERE course_id = ? AND learner_uid = ?");
+        $delEnroll->execute([$course_id, $learner_uid]);
+        $success = "Learner unenrolled successfully!";
+    } else {
+        $errors[] = "Learner not found in this course or permission denied.";
+    }
+}
+
+// -----------------
+// Handle file upload
+// -----------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_material'])) {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $file_url = null;
@@ -62,7 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($_FILES['material_file']['error'] !== UPLOAD_ERR_OK) {
         $errors[] = "Error uploading file.";
     } else {
-        $allowed_types = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','application/zip'];
+        $allowed_types = [
+            'application/pdf','application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg','image/png','application/zip'
+        ];
         $file_type = $_FILES['material_file']['type'];
         if (!in_array($file_type, $allowed_types)) {
             $errors[] = "Unsupported file type. Allowed: PDF, DOC, DOCX, JPEG, PNG, ZIP.";
@@ -89,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Handle deletion
+// Handle material deletion
 if (isset($_GET['delete'])) {
     $delete_id = intval($_GET['delete']);
     $checkStmt = $pdo->prepare("SELECT file_url FROM course_materials WHERE material_id = ? AND course_id = ?");
@@ -110,7 +136,7 @@ if (isset($_GET['delete'])) {
 
 // Fetch enrolled learners
 $enrollStmt = $pdo->prepare("
-    SELECT s.name AS learner_name, ce.enrollment_date
+    SELECT s.name AS learner_name, ce.enrollment_date, s.uid AS learner_uid
     FROM course_enrollments ce
     JOIN students s ON ce.learner_uid = s.uid
     WHERE ce.course_id = ?
@@ -124,7 +150,6 @@ $materialsStmt = $pdo->prepare("SELECT * FROM course_materials WHERE course_id =
 $materialsStmt->execute([$course_id]);
 $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -133,35 +158,170 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
 <title>Course Details - <?php echo htmlspecialchars($course['course_name']); ?></title>
 <link rel="stylesheet" href="../css/student.css" />
 <style>
+/* ===== Page Layout ===== */
 main {
-  max-width: 900px;
-  margin: 1em auto;
-  background: #e5f4fc;
-  padding: 1.5em;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,124,199,0.15);
+    max-width: 900px;
+    margin: 1em auto;
+    background: #e5f4fc;
+    padding: 1.5em;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,124,199,0.15);
 }
+
 h2.course-title {
-  color: #007cc7;
-  margin-bottom: 1em;
-  border-bottom: 2px solid #007cc7;
-  padding-bottom: 0.2em;
+    color: #007cc7;
+    margin-bottom: 1em;
+    border-bottom: 2px solid #007cc7;
+    padding-bottom: 0.2em;
 }
-h3.section-title { color: #005b9f; margin-top: 1.5em; }
-form label { display: block; margin: 0.8em 0 0.3em; font-weight: 600; }
-form input[type=text], form textarea { width: 100%; padding: 0.5em; border: 1px solid #007cc7; border-radius: 4px; }
+
+h3.section-title {
+    color: #005b9f;
+    margin-top: 1.5em;
+}
+
+/* ===== Form Styling ===== */
+form label {
+    display: block;
+    margin: 0.8em 0 0.3em;
+    font-weight: 600;
+}
+
+form input[type=text],
+form textarea {
+    width: 100%;
+    padding: 0.5em;
+    border: 1px solid #007cc7;
+    border-radius: 4px;
+}
+
 form textarea { resize: vertical; }
+
 form input[type=file] { margin-top: 0.3em; }
-form button { margin-top: 1em; background-color: #007cc7; border: none; color: white; padding: 0.7em 1.5em; border-radius: 5px; cursor: pointer; }
+
+form button {
+    margin-top: 1em;
+    background-color: #007cc7;
+    border: none;
+    color: white;
+    padding: 0.7em 1.5em;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
 form button:hover { background-color: #005fa3; }
-table { width: 100%; border-collapse: collapse; margin-top: 0.7em; }
-th, td { padding: 0.6em; border: 1px solid #007cc7; text-align: left; }
-th { background-color: #007cc7; color: white; }
-a.delete-link { color: crimson; text-decoration: none; font-weight: 600; }
-a.delete-link:hover { text-decoration: underline; }
-.error-msg { color: crimson; margin-top: 1em; }
-.success-msg { color: green; margin-top: 1em; }
+
+/* ===== Table Styling ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.7em;
+}
+
+th, td {
+    padding: 0.6em;
+    border: 1px solid #007cc7;
+    text-align: left;
+}
+
+th {
+    background-color: #007cc7;
+    color: white;
+}
+
+/* ===== Links ===== */
+a.delete-link,
+a.unenroll-link {
+    color: crimson;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+a.delete-link:hover,
+a.unenroll-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== Status Messages ===== */
+.error-msg {
+    color: crimson;
+    margin-top: 1em;
+}
+
+
+
+/* ===== Unenroll Button ===== */
+.unenroll-btn {
+    background-color: crimson;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.unenroll-btn:hover { background-color: darkred; }
+
+/* ===== Modal Overlay ===== */
+#unenrollModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: white;
+    width: 400px;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.modal-content h3 { margin-bottom: 15px; }
+
+.modal-content button {
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+    border-radius: 4px;
+}
+
+.confirm-btn { background: crimson; color: white; }
+.cancel-btn { background: #ccc; color: black; }
+
+/* ===== Modal-specific Success & Error ===== */
+.modal-success {
+    background: #d4edda;
+    color: #155724;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.modal-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+.success-msg { background: #d4edda; color: #155724; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
 </style>
+<script>
+function openUnenrollModal(uid) {
+    document.getElementById('unenroll_uid').value = uid;
+    document.getElementById('unenrollModal').style.display = 'block';
+}
+function closeUnenrollModal() {
+    document.getElementById('unenrollModal').style.display = 'none';
+}
+</script>
 </head>
 <body>
 
@@ -179,14 +339,11 @@ a.delete-link:hover { text-decoration: underline; }
   </div>
 </header>
 
-<!-- Top Navigation Bar -->
 <nav class="top-nav">
   <a href="StudentProfile.php" class="active">Profile</a>
   <a href="lost-found.php">Lost &amp; Found</a>
   <a href="cctv-reporting.php">CCTV Reporting</a>
   <a href="event-booking.php">Event Booking</a>
-
-  <!-- Tutor Menu -->
   <div class="dropdown">
     <span class="dropbtn">Tutor ▾</span>
     <div class="dropdown-content">
@@ -194,8 +351,6 @@ a.delete-link:hover { text-decoration: underline; }
       <a href="tutor/tutor-course-requests.php">Course Requests</a>
     </div>
   </div>
-
-  <!-- Learner Dropdown -->
   <div class="dropdown">
     <a href="#" class="dropbtn">Learner▾</a>
     <div class="dropdown-content">
@@ -203,95 +358,82 @@ a.delete-link:hover { text-decoration: underline; }
       <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
     </div>
   </div>
-  </div>
 </nav>
-
 
 <main>
   <h2 class="course-title"><?php echo htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']); ?></h2>
 
-  <!-- Enrolled Learners -->
-  <h3 class="section-title">📚 Enrolled Learners</h3>
-  <?php if (empty($enrolledLearners)): ?>
-    <p>No learners enrolled in this course yet.</p>
-  <?php else: ?>
-    <table>
-      <thead>
-        <tr>
-          <th>Learner Name</th>
-          <th>Enrollment Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($enrolledLearners as $learner): ?>
-          <tr>
-            <td><?php echo htmlspecialchars($learner['learner_name']); ?></td>
-            <td><?php echo date("M d, Y H:i", strtotime($learner['enrollment_date'])); ?></td>
-          </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-  <?php endif; ?>
-
-  <!-- Upload Materials -->
-  <h3 class="section-title">📁 Upload Materials</h3>
-
   <?php if ($errors): ?>
-    <div class="error-msg">
-      <ul>
-        <?php foreach ($errors as $e): ?>
-          <li><?php echo htmlspecialchars($e); ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
+    <div class="error-msg"><ul><?php foreach ($errors as $e): ?><li><?php echo htmlspecialchars($e); ?></li><?php endforeach; ?></ul></div>
   <?php endif; ?>
   <?php if ($success): ?>
     <div class="success-msg"><?php echo htmlspecialchars($success); ?></div>
   <?php endif; ?>
 
-  <form method="POST" enctype="multipart/form-data" novalidate>
-    <label for="title">Material Title <sup style="color:red">*</sup></label>
-    <input type="text" id="title" name="title" required value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" />
-
-    <label for="description">Description <sup style="color:red">*</sup></label>
-    <textarea id="description" name="description" rows="3" required><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
-
-    <label for="material_file">Upload File <sup style="color:red">*</sup></label>
-    <input type="file" id="material_file" name="material_file" accept=".pdf,.doc,.docx,.jpeg,.jpg,.png,.zip" required />
-
-    <button type="submit">Upload Material</button>
-  </form>
-
-  <!-- Existing Materials -->
-  <h3 class="section-title">📄 Uploaded Materials</h3>
-  <?php if (empty($materials)): ?>
-    <p>No materials uploaded yet.</p>
+  <h3 class="section-title">📚 Enrolled Learners</h3>
+  <?php if (empty($enrolledLearners)): ?>
+    <p>No learners enrolled in this course yet.</p>
   <?php else: ?>
     <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Description</th>
-          <th>File</th>
-          <th>Uploaded At</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Learner Name</th><th>Enrollment Date</th><th>Action</th></tr></thead>
       <tbody>
-        <?php foreach ($materials as $mat): ?>
+        <?php foreach ($enrolledLearners as $learner): ?>
           <tr>
-            <td><?php echo htmlspecialchars($mat['title']); ?></td>
-            <td><?php echo nl2br(htmlspecialchars($mat['description'])); ?></td>
-            <td><a href="../<?php echo htmlspecialchars($mat['file_url']); ?>" target="_blank" rel="noopener">View</a></td>
-            <td><?php echo date("M d, Y H:i", strtotime($mat['upload_date'])); ?></td>
-            <td><a href="?course_id=<?php echo $course_id; ?>&delete=<?php echo $mat['material_id']; ?>" class="delete-link" onclick="return confirm('Are you sure you want to delete this material?');">Delete</a></td>
+            <td><?php echo htmlspecialchars($learner['learner_name']); ?></td>
+            <td><?php echo date("M d, Y H:i", strtotime($learner['enrollment_date'])); ?></td>
+            <td><button class="unenroll-btn" onclick="openUnenrollModal('<?php echo $learner['learner_uid']; ?>')">Unenroll</button></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
     </table>
   <?php endif; ?>
 
+  <h3 class="section-title">📁 Upload Materials</h3>
+  <form method="POST" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="upload_material" value="1">
+    <label>Material Title *</label>
+    <input type="text" name="title" required>
+    <label>Description *</label>
+    <textarea name="description" rows="3" required></textarea>
+    <label>Upload File *</label>
+    <input type="file" name="material_file" accept=".pdf,.doc,.docx,.jpeg,.jpg,.png,.zip" required>
+    <button type="submit">Upload Material</button>
+  </form>
+
+  <h3 class="section-title">📄 Uploaded Materials</h3>
+  <?php if (empty($materials)): ?>
+    <p>No materials uploaded yet.</p>
+  <?php else: ?>
+    <table>
+      <thead><tr><th>Title</th><th>Description</th><th>File</th><th>Uploaded At</th><th>Action</th></tr></thead>
+      <tbody>
+        <?php foreach ($materials as $mat): ?>
+          <tr>
+            <td><?php echo htmlspecialchars($mat['title']); ?></td>
+            <td><?php echo nl2br(htmlspecialchars($mat['description'])); ?></td>
+            <td><a href="../<?php echo htmlspecialchars($mat['file_url']); ?>" target="_blank">View</a></td>
+            <td><?php echo date("M d, Y H:i", strtotime($mat['upload_date'])); ?></td>
+            <td><a href="?course_id=<?php echo $course_id; ?>&delete=<?php echo $mat['material_id']; ?>" class="delete-link">Delete</a></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
 </main>
+
+<!-- Unenroll Confirmation Modal -->
+<div id="unenrollModal">
+  <div class="modal-content">
+    <h3>Confirm Unenroll</h3>
+    <p>Are you sure you want to unenroll this learner?</p>
+    <form method="POST">
+      <input type="hidden" name="confirm_unenroll" value="1">
+      <input type="hidden" name="learner_uid" id="unenroll_uid">
+      <button type="submit" class="confirm-btn">Yes, Unenroll</button>
+      <button type="button" class="cancel-btn" onclick="closeUnenrollModal()">Cancel</button>
+    </form>
+  </div>
+</div>
 
 <footer class="footer">
   <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>

@@ -115,3 +115,48 @@ ALTER TABLE courses
 DROP COLUMN subject,
 DROP COLUMN credits;
 
+-- Lost items table
+CREATE TABLE lost_items (
+    lost_id INT AUTO_INCREMENT PRIMARY KEY,
+    reporter_uid CHAR(36) NOT NULL,             -- Who reported the lost item
+    item_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(100),                      -- e.g. "Electronics", "Books", "Clothing"
+    lost_date DATE,
+    location VARCHAR(255),
+    contact_number VARCHAR(20),
+    image LONGBLOB,                             -- Store image file directly
+    image_type VARCHAR(50),                     -- MIME type: 'image/jpeg', 'image/png'
+    status ENUM('open', 'found', 'closed') DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (reporter_uid) REFERENCES students(uid) ON DELETE CASCADE
+);
+
+
+-- Found items table
+CREATE TABLE found_items (
+    found_id INT AUTO_INCREMENT PRIMARY KEY,
+    finder_uid CHAR(36) NOT NULL,               -- Who reported the found item
+    item_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(100),
+    found_date DATE,
+    location VARCHAR(255),
+    image LONGBLOB,                             -- Store image file directly
+    image_type VARCHAR(50),                     -- MIME type
+    status ENUM('unclaimed', 'claimed') DEFAULT 'unclaimed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (finder_uid) REFERENCES students(uid) ON DELETE CASCADE
+);
+
+
+-- Collection records (when owner claims a found item)
+CREATE TABLE found_item_collections (
+    collection_id INT AUTO_INCREMENT PRIMARY KEY,
+    found_id INT NOT NULL,                      -- Link to found item
+    owner_name VARCHAR(100) NOT NULL,
+    owner_iub_id VARCHAR(20) NOT NULL,
+    owner_contact VARCHAR(20) NOT NULL,
+    collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (found_id) REFERENCES found_items(found_id) ON DELETE CASCADE
+);

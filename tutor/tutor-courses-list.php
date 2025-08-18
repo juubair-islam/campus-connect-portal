@@ -6,6 +6,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     exit();
 }
 
+$activePage = 'tutor';
 $host = "localhost";
 $dbname = "campus_connect_portal";
 $username = "root";
@@ -178,6 +179,19 @@ tr:hover {
     background-color: #d9f0ff;
 }
 
+.top-nav .active .dropbtn {
+    background-color: #007cc7;
+    color: white;
+    border-radius: 4px;
+}
+.top-nav .active .dropbtn {
+    background-color: #007cc7;
+    color: white;
+    border-radius: 4px;
+}
+
+
+
   </style>
   <script>
     function confirmDelete(courseName) {
@@ -200,29 +214,29 @@ tr:hover {
     <a href="../logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
+
 <nav class="top-nav">
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-  <a href="cctv-reporting.php">CCTV Reporting</a>
-  <a href="event-booking.php">Event Booking</a>
+  <a href="/StudentProfile.php" class="<?= $activePage === 'profile' ? 'active' : '' ?>">Profile</a>
+  <a href="/lost-found.php" class="<?= $activePage === 'lostfound' ? 'active' : '' ?>">Lost &amp; Found</a>
+  <a href="/cctv-reporting.php" class="<?= $activePage === 'cctv' ? 'active' : '' ?>">CCTV Reporting</a>
+  <a href="/event-booking.php" class="<?= $activePage === 'event' ? 'active' : '' ?>">Event Booking</a>
 
   <!-- Tutor Menu -->
-  <div class="dropdown">
+  <div class="dropdown <?= $activePage === 'tutor' ? 'active' : '' ?>">
     <span class="dropbtn">Tutor ▾</span>
     <div class="dropdown-content">
-      <a href="tutor/tutor-courses-list.php">My Courses</a>
-      <a href="tutor/tutor-course-requests.php">Course Requests</a>
+      <a href="campus-connect-portal/tutor/tutor-courses-list.php">My Courses</a>
+      <a href="/tutor/tutor-course-requests.php">Course Requests</a>
     </div>
   </div>
 
-  <!-- Learner Dropdown -->
-  <div class="dropdown">
-    <a href="#" class="dropbtn">Learner▾</a>
+  <!-- Learner Menu -->
+  <div class="dropdown <?= $activePage === 'learner' ? 'active' : '' ?>">
+    <span class="dropbtn">Learner ▾</span>
     <div class="dropdown-content">
-      <a href="learner/learner-courses-list.php">Find Course</a>
-      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
+      <a href="/learner/learner-courses-list.php">Find Course</a>
+      <a href="/learner/learner-enrolled-courses.php">Enrolled Courses</a>
     </div>
-  </div>
   </div>
 </nav>
 <main>

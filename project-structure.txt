@@ -1,0 +1,70 @@
+Folder PATH listing for volume OS
+Volume serial number is A06E-57A6
+C:.
+¦   admin-dashboard.php
+¦   dashboard.html
+¦   forgot-password.html
+¦   index.html
+¦   login.php
+¦   logout.php
+¦   notifications.php
+¦   project-structure.txt
+¦   Readme.txt
+¦   signup.html
+¦   staff-dashboard.php
+¦   student-dashboard.php
+¦   StudentProfile.php
+¦   
++---Admincreate
+¦       create_admin.php
+¦       
++---css
+¦       dashboard.css
+¦       forgot-password.css
+¦       login.css
+¦       main.css
+¦       signup.css
+¦       student.css
+¦       
++---images
+¦       logo.png
+¦       
++---js
+¦   ¦   dashboard.js
+¦   ¦   forgot-password.js
+¦   ¦   main.js
+¦   ¦   signup.js
+¦   ¦   student.js
+¦   ¦   
+¦   +---modules
+¦           admin.js
+¦           learner.js
+¦           lostfound.js
+¦           tutor.js
+¦           
++---learner
+¦       course-chat.php
+¦       course-request-action.php
+¦       learner-courses-list.php
+¦       learner-enrolled-courses.php
+¦       
++---php
+¦       db.php
+¦       forgot-password.php
+¦       signup.php
+¦       student.php
+¦       
++---tutor
+¦       course-chat.php
+¦       tutor-course-details.php
+¦       tutor-course-edit.php
+¦       tutor-course-materials.php
+¦       tutor-course-requests.php
+¦       tutor-courses-create.php
+¦       tutor-courses-list.php
+¦       tutor-enrolled-courses.php
+¦       
++---uploads
+    +---materials
+            material_689c544716c779.95931519.jpeg
+            
