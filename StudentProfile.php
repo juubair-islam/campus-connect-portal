@@ -18,7 +18,7 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-$stmt = $pdo->prepare("SELECT iub_id, name, department, major, minor, email, contact_number, role, created_at
+$stmt = $pdo->prepare("SELECT iub_id, uid, name, department, major, minor, email, contact_number, role, created_at
                        FROM students
                        WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
@@ -44,15 +44,60 @@ if (isset($_SESSION['message'])) {
 // Delete confirmation flag
 $show_delete_confirm = isset($_GET['confirm_delete']);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Student Profile - Campus Connect</title>
-
-<link rel="stylesheet" href="css/studprofile.css" />
 <link rel="stylesheet" href="css/student.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
+nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
+nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
+
+
+/* Dashboard / Profile */
+main.dashboard { flex:1; max-width:900px; margin:30px auto 60px auto; padding:0 20px; display:flex; flex-direction:column; gap:20px; color:#1e3a5f; }
+
+.profile-section h2 { color:#007cc7; font-weight:700; margin-bottom:20px; font-size:22px; }
+.profile-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,124,199,0.1);
+    padding:25px 35px;
+    color:#1e3a5f;
+}
+.profile-card p { font-size:16px; margin:12px 0; font-weight:500; }
+.profile-card p strong { color:#005b9f; width:140px; display:inline-block; }
+
+.profile-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:15px; }
+.profile-actions a { padding:6px 14px; border-radius:6px; font-weight:600; text-decoration:none; margin-left:10px; }
+.btn-edit { background-color:#007cc7; color:white; } .btn-edit:hover { background-color:#005f99; }
+.btn-delete { background-color:#9b1b14; color:white; } .btn-delete:hover { background-color:#7a130f; }
+
+.alert { padding:12px 20px; margin-bottom:20px; border-radius:8px; }
+.alert.warning { background:#ffe5e5; color:#9b1b14; }
+.confirm-delete .confirm-buttons { display:flex; gap:10px; margin-top:10px; }
+
+footer.footer { background: #0f172a; color:#e2e8f0; text-align:center; padding:20px 0; user-select:none; margin-top:auto; }
+
+/* Responsive */
+@media(max-width:768px){
+    header.header { flex-direction:column; align-items:flex-start; gap:15px; }
+    .header-left { gap:10px; }
+    .logo { width:80px; height:50px; }
+    .title-text h1 { font-size:22px; }
+    .header-right { width:100%; justify-content:space-between; }
+    nav.top-nav { justify-content:flex-start; overflow-x:auto; padding:10px; gap:8px; }
+    nav.top-nav a { padding:6px 12px; font-size:14px; }
+    main.dashboard { margin:20px 15px 40px 15px; padding:0 10px; }
+    .profile-card p { font-size:14px; }
+}
+</style>
 </head>
 <body>
 
@@ -71,25 +116,11 @@ $show_delete_confirm = isset($_GET['confirm_delete']);
 </header>
 
 <nav class="top-nav">
-  <a href="studentDashboard.php">Home</a>
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-
-  <div class="dropdown">
-    <span class="dropbtn">Tutor ▾</span>
-    <div class="dropdown-content">
-      <a href="tutor/tutor-courses-list.php">My Courses</a>
-      <a href="tutor/tutor-course-requests.php">Course Requests</a>
-    </div>
-  </div>
-
-  <div class="dropdown">
-    <span class="dropbtn">Learner ▾</span>
-    <div class="dropdown-content">
-      <a href="learner/learner-courses-list.php">Find Course</a>
-      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
-    </div>
-  </div>
+    <a href="student-dashboard.php">Home</a>
+    <a href="StudentProfile.php" class="active">Profile</a>
+    <a href="lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="tutor/tutor-dashboard.php">Tutor Panel</a>
+    <a href="learner/learner-dashboard.php">Learner Panel</a>
 </nav>
 
 <main class="dashboard">
@@ -102,14 +133,11 @@ $show_delete_confirm = isset($_GET['confirm_delete']);
         </div>
     </div>
 
-
     <?php if($message): ?>
         <div class="alert <?php echo $message_type; ?>"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
 
-
     <div class="profile-card">
-
       <p><strong>Name:</strong> <?php echo htmlspecialchars($student['name']); ?></p>
       <p><strong>IUB ID:</strong> <?php echo htmlspecialchars($student['iub_id']); ?></p>
       <p><strong>Department:</strong> <?php echo htmlspecialchars($student['department']); ?></p>
@@ -121,23 +149,21 @@ $show_delete_confirm = isset($_GET['confirm_delete']);
       <p><strong>Joined On:</strong> <?php echo date("F j, Y", strtotime($student['created_at'])); ?></p>
     </div>
 
-
-
     <?php if($show_delete_confirm): ?>
         <div class="alert warning confirm-delete">
             <p>Are you sure you want to delete your profile?</p>
             <div class="confirm-buttons">
                 <a href="deleteProfile.php" class="btn btn-delete">Yes, Delete</a>
-                <a href="StudentProfile.php" class="btn btn-cancel">Cancel</a>
+                <a href="StudentProfile.php" class="btn btn-edit">Cancel</a>
             </div>
         </div>
     <?php endif; ?>
 
-  </section>
+</section>
 </main>
 
 <footer class="footer">
-  <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
+    &copy; 2025 Campus Connect | Independent University, Bangladesh
 </footer>
 
 </body>

@@ -29,8 +29,7 @@ if (!$currentUser) {
     exit();
 }
 
-// Fetch enrolled courses details for this learner
-// Join course_enrollments, courses, students (tutor)
+// Fetch enrolled courses details
 $sql = "
 SELECT c.course_id, c.course_name, c.course_code, c.available_days, c.start_time, c.end_time, c.description,
        s.name AS tutor_name
@@ -44,12 +43,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute(['learner_uid' => $currentUser['uid']]);
 $enrolledCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// For each course, fetch materials
+// Fetch materials
 $materialsByCourse = [];
 if ($enrolledCourses) {
     $courseIds = array_column($enrolledCourses, 'course_id');
     $inQuery = implode(',', array_fill(0, count($courseIds), '?'));
-    $stmtMat = $pdo->prepare("SELECT course_id, title, description, file_url, upload_date FROM course_materials WHERE course_id IN ($inQuery) ORDER BY upload_date DESC");
+    $stmtMat = $pdo->prepare("SELECT material_id, course_id, title, description, file_data, file_name, file_type, upload_date FROM course_materials WHERE course_id IN ($inQuery) ORDER BY upload_date DESC");
     $stmtMat->execute($courseIds);
     $materials = $stmtMat->fetchAll(PDO::FETCH_ASSOC);
     foreach ($materials as $mat) {
@@ -59,6 +58,23 @@ if ($enrolledCourses) {
 
 function formatTimeRange($start, $end) {
     return date('h:i A', strtotime($start)) . " - " . date('h:i A', strtotime($end));
+}
+
+// Function to display material inline
+function displayMaterial($material) {
+    $fileType = $material['file_type'];
+    $data = base64_encode($material['file_data']);
+    $src = "data:$fileType;base64,$data";
+    
+    $inlineDisplay = '';
+    if (str_contains($fileType, 'image/')) {
+        $inlineDisplay = "<img src='$src' alt='".htmlspecialchars($material['title'])."' style='max-width:300px; display:block; margin:0.5em 0;' />";
+    } elseif (str_contains($fileType, 'pdf')) {
+        $inlineDisplay = "<iframe src='$src' width='100%' height='400px'></iframe>";
+    } else {
+        $inlineDisplay = "<a href='$src' target='_blank'>View ".htmlspecialchars($material['title'])."</a>";
+    }
+    return $inlineDisplay;
 }
 ?>
 
@@ -70,50 +86,90 @@ function formatTimeRange($start, $end) {
 <title>My Enrolled Courses - Campus Connect</title>
 <link rel="stylesheet" href="../css/student.css" />
 <style>
-  main {
-    max-width: 900px;
-    margin: 1em auto;
+  /* --- Styles preserved from original --- */
+
+
+nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
+nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
+nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
+
+.dashboard { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
+
+.today-courses {
     background: #e5f4fc;
-    padding: 1.5em;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,124,199,0.15);
-  }
-  h2.course-title {
-    margin-top: 2em;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,124,199,0.1);
+    font-size: 1em;
     color: #007cc7;
-    border-bottom: 2px solid #007cc7;
-    padding-bottom: 0.2em;
-  }
-  .course-details p {
-    margin: 0.3em 0;
-  }
-  .materials-list {
-    margin-top: 1em;
-    padding-left: 1em;
-  }
-  .material-item {
-    margin-bottom: 0.7em;
-  }
-  .material-title {
-    font-weight: 600;
-    color: #007cc7;
-  }
-  .material-description {
-    font-style: italic;
-    color: #555;
-  }
-  .material-link {
-    color: #005fa3;
-    text-decoration: none;
-  }
-  .material-link:hover {
-    text-decoration: underline;
-  }
-  .no-courses {
-    font-style: italic;
-    color: #555;
-    margin-top: 1em;
-  }
+}
+.today-courses strong { display: block; margin-bottom: 8px; }
+
+.glass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px 20px; text-align: center; text-decoration: none; color: #0f172a; transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; }
+.glass-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+
+.card-icon { font-size: 40px; margin-bottom: 15px; color: #007cc7; }
+.card-title { font-weight: bold; font-size: 1.2em; margin-bottom: 5px; }
+.card-desc { font-size: 0.9em; color: #333; }
+
+.notification-badge {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+
+
+h2 { color: #007cc7; }
+form.search-form { margin-bottom: 1em; text-align: right; }
+form.search-form input[type="text"] { padding: 0.4em 0.6em; border: 1px solid #007cc7; border-radius: 4px; font-size: 1em; width: 280px; }
+form.search-form button { background-color: #007cc7; border: none; color: white; padding: 0.5em 1em; font-size: 1em; border-radius: 4px; cursor: pointer; margin-left: 0.5em; transition: background-color 0.3s ease; }
+form.search-form button:hover { background-color: #005fa3; }
+table { width: 100%; border-collapse: collapse; margin-top: 0.3em; font-size: 0.95em; }
+th, td { padding: 0.7em; border: 1px solid #007cc7; vertical-align: top; text-align: left; }
+th { background-color: #007cc7; color: white; }
+.no-courses { font-style: italic; color: #555; margin-top: 1em; }
+button.action-btn { background-color: #007cc7; border: none; color: white; padding: 0.35em 0.8em; font-size: 0.9em; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; }
+button.action-btn:hover { background-color: #005fa3; }
+button.cancel-btn { background-color: crimson; }
+button.cancel-btn:hover { background-color: darkred; }
+button.pending-btn { background-color: orange; cursor: default; }
+button.pending-btn:hover { background-color: orange; }
+
+/* Modal styles */
+.modal-overlay { display: none; position: fixed; z-index: 9999; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.modal { background: white; max-width: 500px; width: 90%; padding: 1.5em; border-radius: 8px; box-shadow: 0 0 15px rgba(0,124,199,0.3); }
+.modal h3 { margin-top: 0; color: #007cc7; }
+.modal p { margin: 0.3em 0; }
+.modal-buttons { margin-top: 1.2em; text-align: right; }
+.modal-buttons button { margin-left: 0.7em; padding: 0.4em 1em; border-radius: 5px; border: none; font-size: 1em; cursor: pointer; }
+.modal-buttons .btn-cancel { background: #ccc; color: #333; }
+.modal-buttons .btn-confirm { background: #007cc7; color: white; }
+.modal-buttons .btn-confirm:hover { background: #005fa3; }
+
+/* Message box */
+#messageBox { display: none; position: fixed; top: 15px; right: 15px; background: #007cc7; color: white; padding: 1em 1.5em; border-radius: 6px; box-shadow: 0 0 10px rgba(0,124,199,0.7); z-index: 11000; font-weight: 600; }
+#messageBox.error { background: #c0392b; }
+
+footer.footer { background: #0f172a; color: #e2e8f0; text-align: center; padding: 20px 0; user-select: none; margin-top: auto; }
+
+
+  body { font-family: Arial, sans-serif; }
+  main { flex: 1; max-width: 900px; margin: 1em auto; background: #e5f4fc; padding: 1.5em; border-radius: 8px; box-shadow: 0 0 10px rgba(0,124,199,0.15); }
+  h2.course-title { margin-top: 2em; color: #007cc7; border-bottom: 2px solid #007cc7; padding-bottom: 0.2em; }
+  .course-details p { margin: 0.3em 0; }
+  .materials-list { margin-top: 1em; padding-left: 1em; }
+  .material-item { margin-bottom: 0.7em; }
+  .material-title { font-weight: 600; color: #007cc7; }
+  .material-description { font-style: italic; color: #555; }
+  .no-courses { font-style: italic; color: #555; margin-top: 1em; }
 </style>
 </head>
 <body>
@@ -133,29 +189,11 @@ function formatTimeRange($start, $end) {
 </header>
 
 <nav class="top-nav">
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-  <a href="cctv-reporting.php">CCTV Reporting</a>
-  <a href="event-booking.php">Event Booking</a>
-
-  <!-- Tutor Menu -->
-  <div class="dropdown">
-    <span class="dropbtn">Tutor ▾</span>
-    <div class="dropdown-content">
-      <a href="tutor/tutor-courses-list.php">My Courses</a>
-      <a href="tutor/tutor-course-requests.php">Course Requests</a>
-    </div>
-  </div>
-
-  <!-- Learner Dropdown -->
-  <div class="dropdown">
-    <a href="#" class="dropbtn">Learner▾</a>
-    <div class="dropdown-content">
-      <a href="learner/learner-courses-list.php">Find Course</a>
-      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
-    </div>
-  </div>
-  </div>
+    <a href="../student-dashboard.php">Home</a>
+    <a href="../StudentProfile.php">Profile</a>
+    <a href="../lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="../tutor/tutor-dashboard.php">Tutor Panel</a>
+    <a href="../learner/learner-dashboard.php"class="active">Learner Panel</a>
 </nav>
 
 <main>
@@ -183,9 +221,7 @@ function formatTimeRange($start, $end) {
                   <?php if ($material['description']): ?>
                     <span class="material-description"><?php echo htmlspecialchars($material['description']); ?></span><br />
                   <?php endif; ?>
-                  <?php if ($material['file_url']): ?>
-                    <a href="<?php echo htmlspecialchars($material['file_url']); ?>" target="_blank" class="material-link">Download/View</a>
-                  <?php endif; ?>
+                  <?php echo displayMaterial($material); ?>
                   <small> (Uploaded: <?php echo date("M d, Y", strtotime($material['upload_date'])); ?>)</small>
                 </li>
               <?php endforeach; ?>

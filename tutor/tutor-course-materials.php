@@ -226,32 +226,22 @@ $materials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="../logout.php" class="logout-btn">Logout</a>
   </div>
 </header>
+
 <nav class="top-nav">
-  <a href="StudentProfile.php" class="active">Profile</a>
-  <a href="lost-found.php">Lost &amp; Found</a>
-  <a href="cctv-reporting.php">CCTV Reporting</a>
-  <a href="event-booking.php">Event Booking</a>
+  <a href="../student-dashboard.php">Home</a>
+  <a href="../StudentProfile.php">Profile</a>
+  <a href="../lost-found.php">Lost &amp; Found</a>
 
-  <!-- Tutor Menu -->
-  <div class="dropdown">
-    <span class="dropbtn">Tutor ▾</span>
-    <div class="dropdown-content">
-      <a href="tutor/tutor-courses-list.php">My Courses</a>
-      <a href="tutor/tutor-course-requests.php">Course Requests</a>
-    </div>
-  </div>
+  <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
 
-  <!-- Learner Dropdown -->
   <div class="dropdown">
-    <a href="#" class="dropbtn">Learner▾</a>
+    <span class="dropbtn">Learner ▾</span>
     <div class="dropdown-content">
-      <a href="learner/learner-courses-list.php">Find Course</a>
-      <a href="learner/learner-enrolled-courses.php">Enrolled Courses</a>
+      <a href="../learner/learner-courses-list.php">Find Course</a>
+      <a href="../learner/learner-enrolled-courses.php">Enrolled Courses</a>
     </div>
-  </div>
   </div>
 </nav>
-
 <main>
   <h2 class="course-title">Manage Materials for: <?php echo htmlspecialchars($course['course_name']); ?></h2>
 

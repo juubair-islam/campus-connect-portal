@@ -160,3 +160,12 @@ CREATE TABLE found_item_collections (
     collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (found_id) REFERENCES found_items(found_id) ON DELETE CASCADE
 );
+
+
+ALTER TABLE course_materials
+DROP COLUMN file_url,
+ADD COLUMN file_data LONGBLOB NOT NULL,
+ADD COLUMN file_name VARCHAR(255) NOT NULL,
+ADD COLUMN file_type VARCHAR(100) NOT NULL;
+ALTER TABLE lost_items
+ADD COLUMN found_id INT DEFAULT NULL;

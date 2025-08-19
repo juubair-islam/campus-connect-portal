@@ -45,149 +45,114 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <title>My Tutor Courses - Campus Connect</title>
   <link rel="stylesheet" href="../css/student.css" />
   <style>
-    main {
-      max-width: 900px;
-      margin: 2em auto;
-      background: #e5f4fc;
-      padding: 1.5em;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,124,199,0.15);
-    }
-    h2 {
-      margin-bottom: 1em;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 0.75em 1em;
-      border-bottom: 1px solid #007cc7;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      background-color: #007cc7;
-      color: white;
-    }
-    tr:hover {
-      background-color: #d9f0ff;
-    }
-    .actions a, .details a {
-      margin-right: 0.75em;
-      color: #007cc7;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .actions a:hover, .details a:hover {
-      text-decoration: underline;
-    }
-    .no-courses {
-      font-style: italic;
-      color: #555;
-      padding: 1em 0;
-    }
-    .create-course-btn {
-      display: inline-block;
-      margin-bottom: 1em;
-      background-color: #007cc7;
-      color: white;
-      padding: 0.6em 1.2em;
-      border-radius: 5px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-    }
-    .create-course-btn:hover {
-      background-color: #005fa3;
-    }
+body { 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 100vh; 
+    margin: 0; 
+    background: #f5f8fa; 
+    font-family: Arial, sans-serif;
+}
 
 
-/* Table action buttons */
+/* --- Page Container for Center Alignment --- */
+main{
+    max-width: 1200px;
+    margin: 0 auto;   /* centers everything */
+    width: 100%;
+    padding: 0 20px;  /* breathing space */
+    box-sizing: border-box;
+}
+
+
+main h2 { margin-bottom: 20px; color: #0f172a; }
+
+nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
+nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
+nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
+.notification-bar { background: #d0ebff; color: #007cc7; padding: 15px 20px; font-weight: bold; border-radius: 8px; margin: 20px auto 0 auto; max-width: 1200px; text-align: left; }
+.notification-bar ul { margin: 10px 0 0 20px; padding: 0; }
+.notification-bar li { margin-bottom: 5px; }
+.glass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+.glass-card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px 20px; text-align: center; text-decoration: none; color: #0f172a; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.glass-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+.card-icon { font-size: 40px; margin-bottom: 15px; color: #007cc7; }
+.card-title { font-weight: bold; font-size: 1.2em; margin-bottom: 5px; }
+.card-desc { font-size: 0.9em; color: #333; }
+.notification-badge { background: #e74c3c; color: #fff; padding: 2px 8px; border-radius: 50%; font-size: 0.85em; margin-left: 5px; }
+footer.footer { background: #0f172a; color: #e2e8f0; text-align: center; padding: 20px 0; user-select: none; margin-top: auto; }
+
+/* ----- Table Styling ----- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 0.75em 1em;
+    border: 1px solid #007cc7;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    background-color: #007cc7;
+    color: white;
+    font-weight: 700;
+}
+tr:hover {
+    background-color: #d9f0ff;
+}
 .actions a, .details a {
     display: inline-block;
     padding: 5px 12px;
     font-size: 0.9em;
     font-weight: 600;
     border-radius: 5px;
-    text-decoration: none; /* Remove underline */
+    text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease;
-    margin-right: 5px; /* space between buttons */
+    margin-right: 5px;
 }
-
-/* View Details button */
 .details a {
     background-color: #007cc7;
     color: white;
 }
-
 .details a:hover {
     background-color: #005fa3;
 }
-
-/* Edit button */
 .actions a[href*="edit"] {
-    background-color: #28a745; /* green */
+    background-color: #28a745;
     color: white;
 }
-
 .actions a[href*="edit"]:hover {
     background-color: #1e7e34;
 }
-
-/* Delete button */
 .actions a[href*="delete"] {
-    background-color: #dc3545; /* red */
+    background-color: #dc3545;
     color: white;
 }
-
 .actions a[href*="delete"]:hover {
     background-color: #b02a37;
 }
-
-/* Ensure Edit and Delete are inline without wrapping */
 .actions {
     white-space: nowrap;
 }
-
-
-
-/* Bold Course Code and Course Name */
-table tbody tr td:nth-child(1){
-    font-weight: 700; /* bold */
+.no-courses {
+    font-style: italic;
+    color: #555;
+    padding: 1em 0;
 }
-/* Table borders and separation */
-table {
-    width: 100%;
-    border-collapse: collapse; /* keeps borders together */
-}
-
-th, td {
-    padding: 0.75em 1em;
-    border: 1px solid #007cc7; /* full border around each cell */
-    text-align: left;
-    vertical-align: top;
-}
-
-th {
+.create-course-btn {
+    display: inline-block;
+    margin-bottom: 1em;
     background-color: #007cc7;
     color: white;
-    font-weight: 700;
+    padding: 0.6em 1.2em;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
-
-tr:hover {
-    background-color: #d9f0ff;
-}
-
-.top-nav .active .dropbtn {
-    background-color: #007cc7;
-    color: white;
-    border-radius: 4px;
-}
-.top-nav .active .dropbtn {
-    background-color: #007cc7;
-    color: white;
-    border-radius: 4px;
+.create-course-btn:hover {
+    background-color: #005fa3;
 }
 
 
@@ -216,29 +181,13 @@ tr:hover {
 </header>
 
 <nav class="top-nav">
-  <a href="/StudentProfile.php" class="<?= $activePage === 'profile' ? 'active' : '' ?>">Profile</a>
-  <a href="/lost-found.php" class="<?= $activePage === 'lostfound' ? 'active' : '' ?>">Lost &amp; Found</a>
-  <a href="/cctv-reporting.php" class="<?= $activePage === 'cctv' ? 'active' : '' ?>">CCTV Reporting</a>
-  <a href="/event-booking.php" class="<?= $activePage === 'event' ? 'active' : '' ?>">Event Booking</a>
-
-  <!-- Tutor Menu -->
-  <div class="dropdown <?= $activePage === 'tutor' ? 'active' : '' ?>">
-    <span class="dropbtn">Tutor ▾</span>
-    <div class="dropdown-content">
-      <a href="campus-connect-portal/tutor/tutor-courses-list.php">My Courses</a>
-      <a href="/tutor/tutor-course-requests.php">Course Requests</a>
-    </div>
-  </div>
-
-  <!-- Learner Menu -->
-  <div class="dropdown <?= $activePage === 'learner' ? 'active' : '' ?>">
-    <span class="dropbtn">Learner ▾</span>
-    <div class="dropdown-content">
-      <a href="/learner/learner-courses-list.php">Find Course</a>
-      <a href="/learner/learner-enrolled-courses.php">Enrolled Courses</a>
-    </div>
-  </div>
+    <a href="../student-dashboard.php">Home</a>
+    <a href="../StudentProfile.php">Profile</a>
+    <a href="../lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
+    <a href="../learner/learner-dashboard.php">Learner Panel</a>
 </nav>
+
 <main>
   <h2><?php echo htmlspecialchars($firstName); ?>'s Tutor Courses</h2>
 
