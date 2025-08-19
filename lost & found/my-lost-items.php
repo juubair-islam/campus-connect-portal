@@ -64,11 +64,19 @@ nav.top-nav a { margin-right:15px; text-decoration:none; padding:8px 12px; color
 nav.top-nav a.active, nav.top-nav a:hover { background:#007cc7; color:#fff; }
 main { flex:1; max-width:1000px; margin:30px auto 60px auto; padding:0 20px; color:#1e3a5f; }
 main h2 { color:#007cc7; font-weight:700; font-size:22px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+
+
+
 .search-box { display:flex; justify-content:flex-end; margin-bottom:10px; }
 .search-box input { padding:6px 10px; width:200px; border:1px solid #007cc7; border-radius:5px; }
-table { width:100%; border-collapse:collapse; background:#e5f4fc; border-radius:8px; overflow:hidden; box-shadow:0 0 10px rgba(0,124,199,0.15); }
-table th, table td { padding:12px 10px; border-bottom:1px solid #ccc; text-align:left; font-size:14px; vertical-align:middle; }
-table th { background:#007cc7; color:#fff; font-weight:600; }
+/* Table */
+h2 { text-align:center; color:#007cc7; margin-top:20px; }
+table { width:100%; border-collapse:collapse; margin-top:10px; text-align:center; }
+th, td { border:1px solid #007cc7; padding:10px; font-size:14px; }
+th { background:#e5f4fc; color:#007cc7; }
+img.lost-img { width:200px; height:200px; object-fit:cover; border-radius:8px; }
+
+
 .status-btn { padding:5px 10px; border:none; border-radius:5px; color:#fff; font-weight:600; cursor:default; }
 .status-btn.under-process { background:#ffc107; }
 .status-btn.found { background:#28a745; }
@@ -76,13 +84,20 @@ table th { background:#007cc7; color:#fff; font-weight:600; }
 .item-img { width:200px; height:200px; object-fit:cover; border-radius:5px; border:1px solid #ccc; }
 .no-items { text-align:center; padding:20px; color:#555; }
 footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20px 0; user-select:none; margin-top:auto; }
+/* Responsive Table */
 @media(max-width:768px){
-    nav.top-nav { justify-content:flex-start; overflow-x:auto; gap:8px; padding:10px; }
-    nav.top-nav a { padding:6px 12px; font-size:14px; }
-    main h2 { flex-direction:column; text-align:center; gap:10px; }
-    .search-box input { width:100%; max-width:200px; margin:auto; margin-top:10px; }
-    table th, table td { font-size:12px; padding:8px 5px; }
-    .item-img { width:100px; height:100px; }
+    table, thead, tbody, th, td, tr { display:block; width:100%; }
+    thead { display:none; }
+    tr { margin-bottom:15px; border:1px solid #007cc7; border-radius:10px; padding:10px; background:#f5fbff; }
+    td { display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start; padding:10px; border:none; border-bottom:1px solid #007cc7; }
+    td:last-child { border-bottom:none; }
+    td::before { content: attr(data-label); font-weight:bold; color:#007cc7; margin-bottom:5px; }
+    
+    img.lost-img { width:100%; height:auto; margin:10px 0; border-radius:8px; }
+
+    /* Stack buttons vertically */
+    td[data-label="Action"] { display:flex; flex-direction:column; gap:8px; width:100%; }
+    td[data-label="Action"] button { width:100%; }
 }
 </style>
 <script>
@@ -151,7 +166,9 @@ function searchTable() {
         </thead>
         <tbody>
         <?php foreach($lostItems as $item):
-            $status = $statusMap[$item['status']];
+            // Ensure status is valid and exists in statusMap
+            $itemStatus = $item['status'] ?? 'open';
+            $status = $statusMap[$itemStatus] ?? ['label'=>'Unknown','class'=>'not-found'];
         ?>
             <tr>
                 <td><?php echo htmlspecialchars($item['lost_id']); ?></td>
@@ -159,7 +176,7 @@ function searchTable() {
                 <td><?php echo htmlspecialchars($item['item_name']); ?></td>
                 <td><?php echo htmlspecialchars($item['lost_date']); ?></td>
                 <td>
-                    <?php if($item['image']): ?>
+                    <?php if(!empty($item['image'])): ?>
                         <img class="item-img" src="data:<?php echo $item['image_type']; ?>;base64,<?php echo base64_encode($item['image']); ?>" alt="Lost Item">
                     <?php else: ?>N/A<?php endif; ?>
                 </td>

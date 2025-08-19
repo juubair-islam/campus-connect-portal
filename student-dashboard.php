@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// If user not logged in or role is not student → redirect to login
+// Check student login
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: login.php");
     exit();
@@ -17,13 +17,11 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    die("DB connection failed: " . $e->getMessage());
 }
 
-// Fetch student info
-$stmt = $pdo->prepare("SELECT iub_id, uid, name, department, major, minor, email, contact_number, role, created_at
-                       FROM students
-                       WHERE id = ?");
+// Student info
+$stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -33,56 +31,127 @@ if (!$student) {
     exit();
 }
 
-$firstName = explode(' ', trim($student['name']))[0];
-$currentPage = basename($_SERVER['PHP_SELF']);
+$firstName = explode(" ", trim($student['name']))[0];
+$uid = $student['uid'];
+
+// Stats
+$lostCount = $pdo->prepare("SELECT COUNT(*) FROM lost_items WHERE reporter_uid = ?");
+$lostCount->execute([$uid]);
+$lostCount = $lostCount->fetchColumn();
+
+$foundCount = $pdo->prepare("SELECT COUNT(*) 
+                             FROM lost_items 
+                             WHERE reporter_uid = ? AND found_id IS NOT NULL");
+$foundCount->execute([$uid]);
+$foundCount = $foundCount->fetchColumn();
+
+$tutorCourses = $pdo->prepare("SELECT COUNT(*) FROM courses WHERE tutor_uid = ?");
+$tutorCourses->execute([$uid]);
+$tutorCourses = $tutorCourses->fetchColumn();
+
+$learnerRequests = $pdo->prepare("SELECT COUNT(*) 
+                                  FROM course_requests 
+                                  WHERE learner_uid = ? AND status != 'rejected'");
+$learnerRequests->execute([$uid]);
+$learnerRequests = $learnerRequests->fetchColumn();
+
+// Recent activities
+$recentLost = $pdo->prepare("SELECT item_name, created_at 
+                             FROM lost_items 
+                             WHERE reporter_uid = ? 
+                             ORDER BY created_at DESC LIMIT 3");
+$recentLost->execute([$uid]);
+$recentLost = $recentLost->fetchAll(PDO::FETCH_ASSOC);
+
+$recentRequests = $pdo->prepare("SELECT cr.status, c.course_code, cr.request_date 
+                                 FROM course_requests cr
+                                 JOIN courses c ON cr.course_id = c.course_id
+                                 WHERE cr.learner_uid = ?
+                                 ORDER BY cr.request_date DESC LIMIT 3");
+$recentRequests->execute([$uid]);
+$recentRequests = $recentRequests->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch announcements
+$announcementStmt = $pdo->query("
+    SELECT title, content, created_at
+    FROM announcements
+    ORDER BY created_at DESC
+    LIMIT 5
+");
+$announcements = $announcementStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Student Dashboard - Campus Connect</title>
-<link rel="stylesheet" href="css/student.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="css/student.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+main.dashboard { max-width:1200px; margin:30px auto 60px auto; padding:0 20px; display:flex; flex-direction:column; gap:30px; color:#1e3a5f; }
+/* Welcome */
+.welcome-box { background:#007cc7; color:white; padding:25px 30px; border-radius:15px; text-align:center; }
+.welcome-box h2 { font-size:26px; margin-bottom:8px; }
+/* Profile snapshot */
+.profile-snapshot { background:#e5f4fc; padding:20px; border-radius:15px; box-shadow:0 4px 12px rgba(0,124,199,0.1); }
+.profile-snapshot h3 { margin:0 0 10px; color:#007cc7; }
+.profile-snapshot p { margin:4px 0; }
+/* Stats */
+.stats-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:20px; }
+.stat-card { background:white; border-radius:15px; padding:25px; text-align:center; box-shadow:0 6px 14px rgba(0,124,199,0.12); transition:0.3s; }
+.stat-card:hover { transform:translateY(-5px); }
+.stat-card h3 { margin-bottom:8px; color:#005b9f; }
+.stat-card i { font-size:28px; margin-bottom:5px; color:#007cc7; }
+/* Quick links */
+.quick-links { display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:15px; }
+.quick-link { background:#007cc7; color:white; padding:18px; border-radius:12px; text-align:center; text-decoration:none; font-weight:600; transition:0.3s; }
+.quick-link:hover { background:#005b9f; }
+/* Announcements & Activity */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.card { background:white; padding:20px; border-radius:15px; box-shadow:0 6px 14px rgba(0,0,0,0.08); }
+.card h3 { color:#007cc7; margin-bottom:12px; }
+.card ul { list-style:none; margin:0; padding:0; }
+.card li { margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #eee; }
+.card li:last-child { border-bottom:none; }
+.card li small { color:#555; display:block; margin-bottom:4px; }
 nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
 nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
 nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
-
-/* Dropdown */
-.dropdown { position: relative; }
-.dropdown-content {
-    display:none; position:absolute; background: rgba(229,244,252,0.95); top:100%; left:0;
-    min-width:160px; box-shadow:0 4px 8px rgba(0,124,199,0.2); border-radius:8px; z-index:100;
+.announcements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
-.dropdown-content a {
-    display:block; padding:10px 15px; color:#007cc7; font-weight:500; text-decoration:none; border-radius:6px;
+
+.announcements-list li {
+    position: relative;
+    padding: 15px 20px 15px 35px;
+    margin-bottom: 15px;
+    border-left: 4px solid #007cc7; /* blue left border to point each announcement */
+    background: #f9f9f9;
+    border-radius: 8px;
 }
-.dropdown-content a:hover { background:#007cc7; color:white; }
-.dropdown:hover .dropdown-content { display:block; }
 
-/* Dashboard / Main */
-main.dashboard { flex:1; max-width:1200px; margin:30px auto 60px auto; padding:0 20px; display:flex; flex-direction:column; gap:20px; color:#1e3a5f; }
-.activity-gist h2 { color:#007cc7; font-weight:700; font-size:22px; margin-bottom:15px; }
-.activity-cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:20px; }
-.activity-card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius:15px; padding:25px; text-align:center; box-shadow:0 8px 20px rgba(0,124,199,0.1); transition: transform 0.3s; }
-.activity-card:hover { transform: translateY(-5px); box-shadow:0 12px 24px rgba(0,124,199,0.2); }
-.activity-card h3 { margin-bottom:10px; color:#005b9f; }
+.announcements-list li:last-child {
+    margin-bottom: 0;
+}
 
-/* Footer */
-footer.footer { background: #0f172a; color:#e2e8f0; text-align:center; padding:20px 0; user-select:none; margin-top:auto; }
+.announcements-list li small {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.announcements-list li p {
+    margin: 0;
+}
+
 
 /* Responsive */
 @media(max-width:768px){
-    header.header { flex-direction:column; align-items:flex-start; gap:15px; }
-    .header-left { gap:10px; }
-    .logo { width:80px; height:50px; }
-    .title-text h1 { font-size:22px; }
-    .header-right { width:100%; justify-content:space-between; }
-    nav.top-nav { justify-content:flex-start; overflow-x:auto; padding:10px; gap:8px; }
-    nav.top-nav a, nav.top-nav .dropbtn { padding:6px 12px; font-size:14px; }
-    main.dashboard { margin:20px 15px 40px 15px; padding:0 10px; }
+  .grid-2 { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -103,35 +172,63 @@ footer.footer { background: #0f172a; color:#e2e8f0; text-align:center; padding:2
 </header>
 
 <nav class="top-nav">
-  <a href="student-dashboard.php" class="<?php echo $currentPage=='student-dashboard.php' ? 'active' : ''; ?>">Home</a>
-  <a href="StudentProfile.php" class="<?php echo $currentPage=='StudentProfile.php' ? 'active' : ''; ?>">Profile</a>
-  <a href="lost & found/lost-found.php" class="<?php echo $currentPage=='lost-found.php' ? 'active' : ''; ?>">Lost &amp; Found</a>
-  <a href="tutor/tutor-dashboard.php" class="<?php echo $currentPage=='tutor-dashboard.php' ? 'active' : ''; ?>">Tutor Panel</a>
-  <a href="learner/learner-dashboard.php">Learner Panel</a>
+    <a href="student-dashboard.php" class="active">Home</a>
+    <a href="StudentProfile.php">Profile</a>
+    <a href="lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="tutor/tutor-dashboard.php">Tutor Panel</a>
+    <a href="learner/learner-dashboard.php">Learner Panel</a>
 </nav>
 
 <main class="dashboard">
-  <section class="activity-gist">
-    <h2><?php echo htmlspecialchars($firstName); ?>'s Recent Activity</h2>
-    <div class="activity-cards">
-      <div class="activity-card">
-        <h3>Lost & Found Reports</h3>
-        <p>You have reported <strong>3</strong> items recently.</p>
-      </div>
-      <div class="activity-card">
-        <h3>CCTV Reports</h3>
-        <p><strong>2</strong> reports are under review.</p>
-      </div>
-      <div class="activity-card">
-        <h3>Event Bookings</h3>
-        <p>You have <strong>5</strong> upcoming events.</p>
-      </div>
-      <div class="activity-card">
-        <h3>Tutor/Learner Sessions</h3>
-        <p><strong>4</strong> sessions scheduled this month.</p>
-      </div>
+
+  <!-- Profile Snapshot -->
+  <div class="profile-snapshot">
+    <h3>Welcome back, <?php echo htmlspecialchars($firstName); ?></h3>
+    <p><strong>IUB ID:</strong> <?php echo htmlspecialchars($student['iub_id']); ?></p>
+    <p><strong>Department:</strong> <?php echo htmlspecialchars($student['department']); ?></p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card"><i class="fas fa-search"></i><h3>Lost Items</h3><p><strong><?php echo $lostCount; ?></strong> reported</p></div>
+    <div class="stat-card"><i class="fas fa-box-open"></i><h3>Found Items</h3><p><strong><?php echo $foundCount; ?></strong> matched</p></div>
+    <div class="stat-card"><i class="fas fa-chalkboard-teacher"></i><h3>Your Tutor Courses</h3><p><strong><?php echo $tutorCourses; ?></strong> courses</p></div>
+    <div class="stat-card"><i class="fas fa-book-reader"></i><h3>Learner Requests</h3><p><strong><?php echo $learnerRequests; ?></strong> active</p></div>
+  </div>
+
+  <!-- Announcements & Recent Activity -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>Announcements</h3>
+     <ul class="announcements-list">
+    <?php if($announcements): ?>
+        <?php foreach($announcements as $ann): ?>
+            <li>
+                <strong><?php echo htmlspecialchars($ann['title']); ?></strong>
+                <small>Posted on <?php echo date("M d, Y H:i", strtotime($ann['created_at'])); ?></small>
+                <p><?php echo nl2br(htmlspecialchars($ann['content'])); ?></p>
+            </li>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <li>No announcements yet.</li>
+    <?php endif; ?>
+</ul>
+
     </div>
-  </section>
+
+    <div class="card">
+      <h3>Recent Activity</h3>
+      <ul>
+        <?php foreach ($recentLost as $row): ?>
+          <li>🔍 Lost item reported: <?php echo htmlspecialchars($row['item_name']); ?> (<?php echo date("M d", strtotime($row['created_at'])); ?>)</li>
+        <?php endforeach; ?>
+        <?php foreach ($recentRequests as $row): ?>
+          <li>📚 Course <?php echo htmlspecialchars($row['course_code']); ?> request (<?php echo htmlspecialchars($row['status']); ?>)</li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+  </div>
+
 </main>
 
 <footer class="footer">

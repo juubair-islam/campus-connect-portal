@@ -20,91 +20,55 @@ try {
     die("DB connection failed: " . $e->getMessage());
 }
 
-// -----------------------
 // Handle AJAX Update status
-// -----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lost_id']) && isset($_POST['status'])) {
     $lost_id = $_POST['lost_id'];
     $status = $_POST['status'] === 'found' ? 'found' : 'under process';
 
-    // If marking as found and found_id is null, create a dummy found_items record
     if($status === 'found'){
-        // Check if found_id exists
         $stmtCheck = $pdo->prepare("SELECT found_id FROM lost_items WHERE lost_id=:lost_id");
         $stmtCheck->execute(['lost_id'=>$lost_id]);
         $found_id = $stmtCheck->fetchColumn();
         if(!$found_id){
-            // Insert into found_items (minimal info)
             $stmtInsert = $pdo->prepare("INSERT INTO found_items (finder_uid, item_name, found_date, status) 
                                          SELECT reporter_uid, item_name, CURRENT_DATE, 'unclaimed' FROM lost_items WHERE lost_id=:lost_id");
             $stmtInsert->execute(['lost_id'=>$lost_id]);
             $found_id = $pdo->lastInsertId();
 
-            // Update lost_items with found_id
             $stmtUpd = $pdo->prepare("UPDATE lost_items SET found_id=:found_id WHERE lost_id=:lost_id");
             $stmtUpd->execute(['found_id'=>$found_id,'lost_id'=>$lost_id]);
         }
     }
 
-    // Update lost_items status
     $stmt = $pdo->prepare("UPDATE lost_items SET status=:status WHERE lost_id=:lost_id");
-    if ($stmt->execute(['status'=>$status, 'lost_id'=>$lost_id])) {
-        echo 'success';
-    } else {
-        echo 'failed';
-    }
+    echo $stmt->execute(['status'=>$status, 'lost_id'=>$lost_id]) ? 'success' : 'failed';
     exit();
 }
 
-// -----------------------
 // Handle AJAX Details popup
-// -----------------------
 if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['details_id'])){
     $lost_id = $_POST['details_id'];
-
-    // Get lost item found_id
     $stmt = $pdo->prepare("SELECT found_id FROM lost_items WHERE lost_id=:lost_id");
     $stmt->execute(['lost_id'=>$lost_id]);
     $found_id = $stmt->fetchColumn();
 
     if($found_id){
-        // Get collection info
         $stmt2 = $pdo->prepare("SELECT owner_name, owner_contact, collected_at FROM found_item_collections WHERE found_id=:found_id ORDER BY collection_id DESC LIMIT 1");
         $stmt2->execute(['found_id'=>$found_id]);
         $details = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-        if($details){
-            echo json_encode([
-                'success'=>true,
-                'owner_name'=>$details['owner_name'],
-                'owner_contact'=>$details['owner_contact'],
-                'found_time'=>date('d M Y, h:i A', strtotime($details['collected_at']))
-            ]);
-        } else {
-            echo json_encode(['success'=>false]);
-        }
-    } else {
-        echo json_encode(['success'=>false]);
-    }
+        echo $details ? json_encode(['success'=>true,'owner_name'=>$details['owner_name'],'owner_contact'=>$details['owner_contact'],'found_time'=>date('d M Y, h:i A', strtotime($details['collected_at']))]) : json_encode(['success'=>false]);
+    } else echo json_encode(['success'=>false]);
     exit();
 }
 
-// -----------------------
 // Fetch staff info
-// -----------------------
 $stmt = $pdo->prepare("SELECT uid, full_name FROM administrative_staff WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $staff = $stmt->fetch(PDO::FETCH_ASSOC);
-if(!$staff){
-    session_destroy();
-    header("Location: ../login.php");
-    exit();
-}
+if(!$staff){ session_destroy(); header("Location: ../login.php"); exit(); }
 $firstName = explode(' ', trim($staff['full_name']))[0];
 
-// -----------------------
 // Fetch lost items
-// -----------------------
 $stmt = $pdo->query("
     SELECT l.lost_id, l.created_at AS report_time, l.item_name, l.lost_date, l.image, l.image_type, s.name AS reporter_name, s.contact_number, l.status, l.found_id
     FROM lost_items l
@@ -118,7 +82,7 @@ $lostItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Staff Lost Items - Campus Connect</title>
+<title>Lost Items Report - Campus Connect</title>
 <link rel="stylesheet" href="../css/student.css" />
 <style>
 /* Navbar */
@@ -127,15 +91,21 @@ nav.top-nav a { margin-right:15px; text-decoration:none; padding:8px 12px; color
 nav.top-nav a.active, nav.top-nav a:hover { background:#007cc7; color:#fff; }
 
 /* Table */
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th, td { border:1px solid #007cc7; padding:10px; text-align:center; font-size:14px; }
+h2 { text-align:center; color:#007cc7; margin-top:20px; }
+table { width:100%; border-collapse:collapse; margin-top:10px; text-align:center; }
+th, td { border:1px solid #007cc7; padding:10px; font-size:14px; }
 th { background:#e5f4fc; color:#007cc7; }
 img.lost-img { width:200px; height:200px; object-fit:cover; border-radius:8px; }
 
 /* Buttons */
-button.update-btn, button.details-btn { background:#007cc7; color:#fff; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; }
-button.update-btn:hover, button.details-btn:hover { background:#005fa3; }
+button.update-btn { background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; }
+button.details-btn { background:#007cc7; color:#fff; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; }
+button.update-btn:hover { background:#218838; }
+button.details-btn:hover { background:#005fa3; }
 button:disabled { background:#ccc; cursor:not-allowed; }
+
+/* Search Box */
+#searchBox { width:300px; padding:8px 12px; margin:15px auto; display:block; border-radius:5px; border:1px solid #007cc7; outline:none; }
 
 /* Popup */
 .popup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; }
@@ -150,13 +120,22 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20px 0; margin-top:20px; }
 
 /* Responsive */
+/* Responsive Table */
 @media(max-width:768px){
-    table, thead, tbody, th, td, tr { display:block; }
-    th { display:none; }
-    td { display:flex; justify-content:space-between; padding:10px; border:none; border-bottom:1px solid #007cc7; }
-    td::before { content: attr(data-label); font-weight:bold; }
-    img.lost-img { width:100%; height:auto; margin:10px 0; }
+    table, thead, tbody, th, td, tr { display:block; width:100%; }
+    thead { display:none; }
+    tr { margin-bottom:15px; border:1px solid #007cc7; border-radius:10px; padding:10px; background:#f5fbff; }
+    td { display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start; padding:10px; border:none; border-bottom:1px solid #007cc7; }
+    td:last-child { border-bottom:none; }
+    td::before { content: attr(data-label); font-weight:bold; color:#007cc7; margin-bottom:5px; }
+    
+    img.lost-img { width:100%; height:auto; margin:10px 0; border-radius:8px; }
+
+    /* Stack buttons vertically */
+    td[data-label="Action"] { display:flex; flex-direction:column; gap:8px; width:100%; }
+    td[data-label="Action"] button { width:100%; }
 }
+
 </style>
 </head>
 <body>
@@ -175,15 +154,18 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
 </header>
 
 <nav class="top-nav">
-    <a href="staff-dashboard.php">Home</a>
-    <a href="staff-lost-items.php" class="active">Lost Items</a>
-    <a href="cctv-reports.php">CCTV Reports</a>
-    <a href="event-booking.php">Event Booking</a>
+  <a href="../staff-dashboard.php">Home</a>
+  <a href="../staff-Profile.php">Profile</a>
+  <a href="../staff-found-item-report.php">Found Report</a>
+  <a href="staff-lost-items.php" class="active">Lost Item Reports</a>
+  <a href="../staff-found-items.php">Found Items</a>
 </nav>
 
+
 <main class="dashboard">
-    <h2><?php echo htmlspecialchars($firstName); ?>'s Lost Items</h2>
-    <table>
+    <h2>Lost Item Reports</h2>
+    <input type="text" id="searchBox" placeholder="Search by Item Name...">
+    <table id="lostTable">
         <thead>
             <tr>
                 <th>Waiting SL</th>
@@ -215,7 +197,7 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
     </table>
 </main>
 
-<!-- Update Popup -->
+<!-- Popups -->
 <div class="popup-overlay" id="statusPopup">
     <div class="popup-content">
         <span id="closePopup">×</span>
@@ -226,7 +208,6 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
     </div>
 </div>
 
-<!-- Details Popup -->
 <div class="popup-overlay" id="detailsPopup">
     <div class="popup-content">
         <span id="closeDetailsPopup">×</span>
@@ -240,6 +221,15 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
 </footer>
 
 <script>
+// Filter table
+document.getElementById('searchBox').addEventListener('keyup', function(){
+    let filter = this.value.toLowerCase();
+    document.querySelectorAll('#lostTable tbody tr').forEach(row=>{
+        let item = row.cells[2].textContent.toLowerCase();
+        row.style.display = item.includes(filter) ? '' : 'none';
+    });
+});
+
 // Update Popup
 let popup = document.getElementById('statusPopup');
 let reporterInfo = document.getElementById('reporterInfo');

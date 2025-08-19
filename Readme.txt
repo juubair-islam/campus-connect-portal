@@ -167,5 +167,18 @@ DROP COLUMN file_url,
 ADD COLUMN file_data LONGBLOB NOT NULL,
 ADD COLUMN file_name VARCHAR(255) NOT NULL,
 ADD COLUMN file_type VARCHAR(100) NOT NULL;
+
+
 ALTER TABLE lost_items
 ADD COLUMN found_id INT DEFAULT NULL;
+
+ALTER TABLE found_items
+MODIFY COLUMN finder_uid CHAR(36) DEFAULT NULL;
+
+CREATE TABLE IF NOT EXISTS announcements (
+    announcement_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_by CHAR(36) NOT NULL,  -- admin uid
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
