@@ -116,7 +116,7 @@ footer.footer { background: #0f172a; color: #e2e8f0; text-align: center; padding
         <div class="card-desc">Browse items reported as lost</div>
     </a>
 
-    <a href="found-items-list.php" class="glass-card">
+    <a href="stud-found-item-list.php" class="glass-card">
         <div class="card-icon"><i class="fas fa-eye"></i></div>
         <div class="card-title">View Found Items</div>
         <div class="card-desc">See items that have been found on campus</div>

@@ -1,71 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Connect - Welcome</title>
-  <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/student.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Connect - Landing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glastic-icons@1.0.0/css/glastic-icons.min.css">
+    <link rel="stylesheet" href="css/signup.css" />
+  <style>
+
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #e5f4fc, #c0e4f7);
+      overflow-x: hidden;
+      color: #333;
+    }
+
+
+    .logo-title {
+      display: auto;
+      align-items: center;
+      text-decoration: none;
+      color: #007cc7;
+    }
+
+    .logo-title .logo {
+      width: 60px;
+      height: 60px;
+      margin-right: 15px;
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      color: #007cc7;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: #007cc7;
+      margin-top: 3px;
+    }
+
+    .hero {
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      text-align: center;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      animation: fadeInUp 1.5s ease forwards;
+    }
+
+    .hero-content h1 {
+      font-size: 60px;
+      margin-bottom: 25px;
+      color: #007cc7;
+    }
+
+    .hero-content p {
+      font-size: 20px;
+      max-width: 700px;
+      margin-bottom: 35px;
+      color: #333;
+    }
+
+    .cta-button {
+      background-color: #007cc7;
+      color: #fff;
+      padding: 20px 60px;
+      border-radius: 50px;
+      font-size: 22px;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transition: 0.4s;
+      animation: floatButton 2.5s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    .cta-button:hover {
+      background-color: #005fa3;
+      transform: translateY(-5px) scale(1.05);
+    }
+
+    /* Floating shapes */
+    .particle {
+      position: absolute;
+      background-color: rgba(0,124,199,0.15);
+      border-radius: 50%;
+      z-index: 1;
+      animation: floatParticle linear infinite;
+    }
+
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(50px);}
+      100% { opacity: 1; transform: translateY(0);}
+    }
+
+    @keyframes floatButton {
+      0%,100% { transform: translateY(0);}
+      50% { transform: translateY(-10px);}
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translateY(0) translateX(0); opacity:0.5;}
+      50% { transform: translateY(-50px) translateX(20px); opacity:0.2;}
+      100% { transform: translateY(0) translateX(0); opacity:0.5;}
+    }
+
+    section.info {
+      padding: 60px 20px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: center;
+    }
+
+    section.info h2 {
+      color: #007cc7;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    section.info p {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+
+    @media(max-width:768px){
+      .hero-content h1{ font-size:40px; }
+      .hero-content p{ font-size:18px; }
+      .cta-button { font-size:18px; padding:15px 40px; }
+      section.info h2{ font-size:28px; }
+      section.info p{ font-size:16px; }
+    }
+
+
+
+    
+  </style>
 </head>
 <body>
 
-<!-- Header -->
 <header class="header">
-  <div class="header-left">
-    <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
-    <div class="title-text">
+  <a href="index.html" class="logo-title">
+    <div class="header-text">
       <h1>Campus Connect</h1>
       <p class="tagline">Bridge to Your IUB Community</p>
     </div>
-  </div>
-  <div class="header-right">
-    <a href="login.php" class="btn btn-login">Login</a>
-    <a href="signup.php" class="btn btn-signup">Sign Up</a>
-  </div>
+
+  </a>
+    <a href="login.php" class="back-button">Login</a>
+
 </header>
 
-<!-- Hero Section -->
+
 <section class="hero">
-  <div class="hero-text">
-    <h2>Stay Connected. Stay Informed.</h2>
-    <p>Your one-stop platform for Lost & Found, CCTV reporting, Event Booking, Tutor/Learner services, and more.</p>
-    <div class="hero-buttons">
-      <a href="signup.php" class="btn btn-primary">Get Started</a>
-      <a href="login.php" class="btn btn-secondary">Log In</a>
-    </div>
+  <div class="hero-content">
+    <h1>Welcome to Campus Connect</h1>
+     <img src="images/logo.png" alt="Campus Connect Logo" class="logo" />
+    <p>Campus Connect is your hub for connecting with students, alumni, and faculty at IUB. Report lost & found items, manage tutoring sessions, and stay updated with campus activities — all in one place.</p>
+    <a href="signup.html" class="cta-button"><i class="gi gi-user-plus"></i> Get Started</a>
   </div>
-  <div class="hero-image">
-    <img src="images/landing-illustration.svg" alt="Campus Illustration">
-  </div>
+
+  <!-- Floating shapes -->
+  <div class="particle" style="width:20px;height:20px;top:25%;left:15%;animation-duration:6s;"></div>
+  <div class="particle" style="width:15px;height:15px;top:40%;left:70%;animation-duration:8s;"></div>
+  <div class="particle" style="width:25px;height:25px;top:60%;left:35%;animation-duration:10s;"></div>
+  <div class="particle" style="width:12px;height:12px;top:20%;left:60%;animation-duration:7s;"></div>
+  <div class="particle" style="width:18px;height:18px;top:55%;left:25%;animation-duration:9s;"></div>
 </section>
 
-<!-- Features Section -->
-<section class="features">
-  <h2>What You Can Do</h2>
-  <div class="feature-grid">
-    <div class="feature-card">
-      <h3>Lost & Found</h3>
-      <p>Report and recover lost items quickly with the help of your university community.</p>
-    </div>
-    <div class="feature-card">
-      <h3>CCTV Reporting</h3>
-      <p>Submit incident reports directly to the administrative team for review.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Event Booking</h3>
-      <p>Reserve spaces and resources for your events in just a few clicks.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Tutor/Learner Panel</h3>
-      <p>Connect with tutors, enroll in courses, and share educational materials easily.</p>
-    </div>
-  </div>
-</section>
 
-<!-- Footer -->
-<footer class="footer">
+
+<section class="footer">
   <p>&copy; 2025 Campus Connect | Independent University, Bangladesh</p>
-</footer>
+</section>
 
 </body>
 </html>

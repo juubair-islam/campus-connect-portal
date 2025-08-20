@@ -180,6 +180,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: #555;
       margin-top: 0.3em;
     }
+
+
+    nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
+nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
+nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
+
   </style>
 </head>
 <body>
@@ -199,21 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </header>
 
 <nav class="top-nav">
-  <a href="../student-dashboard.php">Home</a>
-  <a href="../StudentProfile.php">Profile</a>
-  <a href="../lost-found.php">Lost &amp; Found</a>
-
-  <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
-
-  <div class="dropdown">
-    <span class="dropbtn">Learner ▾</span>
-    <div class="dropdown-content">
-      <a href="../learner/learner-courses-list.php">Find Course</a>
-      <a href="../learner/learner-enrolled-courses.php">Enrolled Courses</a>
-    </div>
-  </div>
+    <a href="../student-dashboard.php">Home</a>
+    <a href="../StudentProfile.php">Profile</a>
+    <a href="../lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
+    <a href="../learner/learner-dashboard.php">Learner Panel</a>
 </nav>
-
 
 <main>
   <h2>Edit Course: <?php echo htmlspecialchars($course['course_code']); ?></h2>

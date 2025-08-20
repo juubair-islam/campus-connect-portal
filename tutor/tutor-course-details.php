@@ -179,6 +179,11 @@ a.delete-link:hover, a.unenroll-link:hover { text-decoration: underline; }
 /* Material display */
 .material-preview { margin: 10px 0; padding: 10px; border: 1px solid #007cc7; border-radius: 6px; background: #f0faff; }
 .material-preview iframe, .material-preview img { width: 100%; height: 500px; }
+nav.top-nav { display: flex; background: #e5f4fc; padding: 10px 20px; flex-wrap: wrap; }
+nav.top-nav a { margin-right: 15px; text-decoration: none; padding: 8px 12px; color: #007cc7; font-weight: bold; border-radius: 5px; transition: 0.3s; }
+nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
+
+
 </style>
 <script>
 function openUnenrollModal(uid) {
@@ -207,17 +212,11 @@ function closeUnenrollModal() {
 </header>
 
 <nav class="top-nav">
-  <a href="../student-dashboard.php">Home</a>
-  <a href="../StudentProfile.php">Profile</a>
-  <a href="../lost-found.php">Lost &amp; Found</a>
-  <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
-  <div class="dropdown">
-    <span class="dropbtn">Learner ▾</span>
-    <div class="dropdown-content">
-      <a href="../learner/learner-courses-list.php">Find Course</a>
-      <a href="../learner/learner-enrolled-courses.php">Enrolled Courses</a>
-    </div>
-  </div>
+    <a href="../student-dashboard.php">Home</a>
+    <a href="../StudentProfile.php">Profile</a>
+    <a href="../lost & found/lost-found.php">Lost &amp; Found</a>
+    <a href="tutor-dashboard.php" class="active">Tutor Panel</a>
+    <a href="../learner/learner-dashboard.php">Learner Panel</a>
 </nav>
 
 <main>

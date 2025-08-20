@@ -118,7 +118,7 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
   <!-- Highlight profile for both StudentProfile.php and editProfile.php -->
   <a href="StudentProfile.php" class="<?php echo in_array($currentPage, ['StudentProfile.php','editProfile.php']) ? 'active' : ''; ?>">Profile</a>
 
-  <a href="lost-found.php" class="<?php echo $currentPage=='lost-found.php' ? 'active' : ''; ?>">Lost &amp; Found</a>
+  <a href="lost & found/lost-found.php" class="<?php echo $currentPage=='lost-found.php' ? 'active' : ''; ?>">Lost &amp; Found</a>
   <a href="tutor/tutor-dashboard.php" class="<?php echo $currentPage=='tutor-dashboard.php' ? 'active' : ''; ?>">Tutor Panel</a>
   <a href="learner/learner-dashboard.php" class="<?php echo $currentPage=='learner-dashboard.php' ? 'active' : ''; ?>">Learner Panel</a>
 </nav>
