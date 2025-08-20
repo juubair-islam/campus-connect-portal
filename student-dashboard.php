@@ -71,6 +71,33 @@ $recentRequests = $pdo->prepare("SELECT cr.status, c.course_code, cr.request_dat
 $recentRequests->execute([$uid]);
 $recentRequests = $recentRequests->fetchAll(PDO::FETCH_ASSOC);
 
+
+
+
+$totalEnrolledStmt = $pdo->prepare("
+    SELECT COUNT(DISTINCT ce.learner_uid) 
+    FROM course_enrollments ce
+    JOIN courses c ON ce.course_id = c.course_id
+    WHERE c.tutor_uid = ?
+");
+$totalEnrolledStmt->execute([$uid]);
+$totalEnrolled = $totalEnrolledStmt->fetchColumn();
+
+
+
+
+
+
+$totalLearnersStmt = $pdo->prepare("
+    SELECT COUNT(*) 
+    FROM course_requests cr
+    JOIN courses c ON cr.course_id = c.course_id
+    WHERE c.tutor_uid = ?
+");
+$totalLearnersStmt->execute([$uid]);
+$totalLearners = $totalLearnersStmt->fetchColumn();
+
+
 // Fetch announcements
 $announcementStmt = $pdo->query("
     SELECT title, content, created_at
@@ -80,6 +107,10 @@ $announcementStmt = $pdo->query("
 ");
 $announcements = $announcementStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -193,7 +224,11 @@ nav.top-nav a.active, nav.top-nav a:hover { background: #007cc7; color: #fff; }
     <div class="stat-card"><i class="fas fa-search"></i><h3>Lost Items</h3><p><strong><?php echo $lostCount; ?></strong> reported</p></div>
     <div class="stat-card"><i class="fas fa-box-open"></i><h3>Found Items</h3><p><strong><?php echo $foundCount; ?></strong> matched</p></div>
     <div class="stat-card"><i class="fas fa-chalkboard-teacher"></i><h3>Your Tutor Courses</h3><p><strong><?php echo $tutorCourses; ?></strong> courses</p></div>
-    <div class="stat-card"><i class="fas fa-book-reader"></i><h3>Learner Requests</h3><p><strong><?php echo $learnerRequests; ?></strong> active</p></div>
+    <div class="stat-card"><i class="fas fa-book-reader"></i><h3>My Enrolled Course</h3><p><strong><?php echo $learnerRequests; ?></strong> active</p></div>
+    <div class="stat-card"><i class="fas fa-users"></i><h3>Total Learners</h3><p><strong><?php echo $totalEnrolled; ?></strong> enrolled</p></div>
+
+
+    
   </div>
 
   <!-- Announcements & Recent Activity -->
