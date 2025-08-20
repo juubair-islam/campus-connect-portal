@@ -186,7 +186,7 @@ footer.footer { background:#0f172a; color:#e2e8f0; text-align:center; padding:20
     </div>
     <div>
         <span class="user-name"><?php echo htmlspecialchars($staff['full_name']); ?></span>
-        <a href="../logout.php" class="logout-btn">Logout</a>
+        <a href="logout.php" class="logout-btn">Logout</a>
     </div>
 </header>
 
